@@ -13,6 +13,7 @@ An image-backed background prompt picker for Forge Neo and ReForge. **As of July
 - Full tab, compact prompt bars, and a resizable side panel
 - Adjustable thumbnail size
 - Hybrid output combining Danbooru-style tags and natural language
+- Neutral base prompts with optional Photo or Anime Style Boost
 - Editable output inserted at the current prompt cursor position
 - Separate browser-tab mode for multi-monitor workflows
 
@@ -20,7 +21,7 @@ An image-backed background prompt picker for Forge Neo and ReForge. **As of July
 
 1. Open the **Background Prompter** tab or select **Choose in side panel** under txt2img or img2img.
 2. Search for and select a background.
-3. Adjust the output format or edit the generated prompt if needed.
+3. Adjust the output format, optionally select **Photo** or **Anime** under **Style Boost**, or edit the generated prompt.
 4. Select **Insert into txt2img** or **Insert into img2img**.
 
 Buttons are displayed in Japanese when a supported Japanese WebUI localization is active.
@@ -34,6 +35,10 @@ Buttons are displayed in Japanese when a supported Japanese WebUI localization i
 - If the UI type cannot be detected, the checkpoint name is checked and tags-first output is used as the final fallback.
 
 You can manually select **Tags first** or **Natural language first**. Underscores in tags are converted to spaces when inserting into the WebUI.
+
+**Tags first** usually uses five to eight compact Danbooru-style scene and object tags. Repeated scene names, generic foreground-object instructions, and optional time or lighting modifiers are omitted; time that defines the scene (such as a night street) and physical light sources remain. Short natural-language support is added only when spatial relationships are difficult to express as tags. **Natural language first** keeps the fuller scene description and adds only supplemental tags not already covered by it.
+
+Base prompts do not force a realistic or anime style and do not include person, readable-text, or logo exclusions. **Style Boost** is off by default; Photo and Anime are mutually exclusive and append a short style phrase to the editable output.
 
 ## Display language
 
@@ -61,7 +66,7 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 - Supported WebUIs: Forge Neo and ReForge
 - Prompt insertion occurs at the current cursor position; inserting identical content repeatedly creates duplicates
 - Changing the background or output format while an edit is in progress prompts you for confirmation before discarding it
-- Favorites, recent items, thumbnail size, and panel width are stored in the browser
+- Favorites, recent items, thumbnail size, panel width, and Style Boost are stored in the browser
 - Presets are stored in **data/background_presets.json** and preview images in **assets/thumbnails/**
 
 ---
@@ -81,6 +86,7 @@ Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026�
 - 通常タブ、コンパクトバー、幅を変えられるサイドパネルに対応
 - サムネイルサイズを調整可能
 - Danbooru風タグと自然文を組み合わせたハイブリッド出力
+- 中立な基本プロンプトへ写真・アニメのStyle Boostを任意追加
 - 出力プロンプトを編集してカーソル位置へ挿入
 - 同じ画面を別ブラウザータブで表示
 
@@ -88,7 +94,7 @@ Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026�
 
 1. `Background Prompter`タブ、またはtxt2img / img2img下の`Choose in side panel`を開きます。
 2. 背景を検索・選択します。
-3. 必要なら出力形式やプロンプトを編集します。
+3. 必要なら出力形式を変更し、`Style Boost`の`写真`または`アニメ`を選択するか、出力プロンプトを編集します。
 4. `Insert into txt2img`または`Insert into img2img`を押します。
 
 日本語表示では各ボタンも日本語になります。
@@ -102,6 +108,10 @@ Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026�
 - 判定できない場合はcheckpoint名を確認し、最後はタグ優先になります。
 
 `Tags first`または`Natural language first`へ手動固定もできます。WebUIへ出力するタグのアンダーバーは空白へ変換されます。
+
+`Tags first`は、場面と主要物を通常5～8個のDanbooru風圧縮タグで出力します。場面名の重複、汎用的なforeground object、任意の時刻・照明修飾は省きますが、夜道など場面を成立させる時刻と、ランタンなど実在する光源は残します。位置関係をタグで表しにくい場合だけ短い自然文を補足します。`Natural language first`は詳細な場面説明を維持し、説明に含まれない補助タグだけを追加します。
+
+基本プロンプトはリアル・アニメのスタイルを固定せず、人物不在、読める文字、ロゴの除外指定も含みません。`Style Boost`の初期値はオフで、`写真`と`アニメ`は同時選択できず、選択した短いスタイル指定が編集可能な出力末尾へ追加されます。
 
 ### 表示言語
 
@@ -131,6 +141,6 @@ https://github.com/ukr8b3g-cmyk/Background-Prompter
 - 対象はForge Neo / ReForgeです。
 - 挿入は現在のカーソル位置です。同じ内容を繰り返し挿入すると重複します。
 - 編集中に背景または出力形式を変える場合は、破棄確認が表示されます。
-- お気に入り、最近使用、サムネイルサイズ、パネル幅はブラウザー内に保存されます。
+- お気に入り、最近使用、サムネイルサイズ、パネル幅、Style Boostはブラウザー内に保存されます。
 
 プリセット定義は`data/background_presets.json`、画像は`assets/thumbnails/`にあります。

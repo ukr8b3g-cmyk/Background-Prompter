@@ -13,8 +13,13 @@ const sourceJsonPath = path.resolve(sourceArgument);
 const sourceThumbnailRoot = path.join(path.dirname(sourceJsonPath), "thumbnails");
 const targetJsonPath = path.join(extensionRoot, "data", "background_presets.json");
 const targetThumbnailRoot = path.join(extensionRoot, "assets", "thumbnails");
+const tagOverrides = JSON.parse(await readFile(path.join(extensionRoot, "data", "tag_overrides.json"), "utf8"));
 
 const manual = {
+  tree_portrait_background: {
+    group: "Outdoor",
+    tags: "scenery, large_tree, thick_trunk, spreading_branches, leafy_canopy, park, grass, curved_path",
+  },
   apartment_balcony: {
     group: "Outdoor",
     tags: "scenery, balcony, railing, potted_plant, cityscape, outdoors, daylight",
@@ -96,8 +101,13 @@ const groupKeywords = [
 const droppedWords = new Set([
   "a", "an", "the", "of", "from", "in", "on", "at", "to", "for", "background", "realistic",
   "photorealistic", "scene", "setting", "clear", "usable", "composition", "details", "atmosphere",
-  "main", "person", "people", "human", "subject", "readable", "text", "logo", "logos",
+  "main", "person", "people", "human", "subject", "readable", "text", "logo", "logos", "foreground", "objects",
 ]);
+
+const relationalClause = /\b(?:foreground|view from|last position|toward|towards|receding|becoming smaller|placed|facing camera|centered|distance)\b/i;
+const relationalTag = /(?:^|_)(?:foreground(?:_|$)|view_(?:from|last|middle)(?:_|$)|slightly_(?:downward|upward)_view(?:_|$)|toward(?:_|$)|receding(?:_|$)|becoming(?:_|$)|last_position(?:_|$)|placed(?:_|$)|facing_camera(?:_|$)|centered(?:_|$)|distance(?:_|$)|clearly(?:_|$)|kept(?:_|$)|filling(?:_|$))/i;
+const optionalConditionTag = /(?:^|_)(?:light|lights|lighting|daylight|sunlight|moonlight|night|morning|evening|dawn|dusk|sunset|midnight|golden_hour|blue_hour)(?:_|$)/i;
+const physicalLightTag = /(?:^|_)(?:lamps?|lanterns?|torches?|candles?|neon|traffic_lights?|surgical_lights?|stage_lights?|machine_lights?|lightbulbs?)(?:_|$)/i;
 
 function normalizedWords(value) {
   return ` ${value.toLowerCase().replace(/[_-]+/g, " ").replace(/[^a-z0-9]+/g, " ").trim()} `;
@@ -140,14 +150,82 @@ function generateTags(preset) {
 
   for (const clause of clauses) {
     const value = clause.trim();
-    if (!value || /\b(?:no|not|without|exclude|excluding)\b/i.test(value)) continue;
+    if (!value || /\b(?:no|not|without|exclude|excluding)\b/i.test(value) || relationalClause.test(value)) continue;
     const tag = toTag(value);
     if (!tag || tags.includes(tag)) continue;
     tags.push(tag);
     if (tags.length === 8) break;
   }
 
-  return tags.join(", ");
+  return compactTagValues(tags.join(", ")).join(", ");
+}
+
+function compactTagValues(value) {
+  const tags = [];
+  String(value || "").split(",").forEach((item, index) => {
+    const rawTag = item.trim().toLowerCase();
+    const isSceneTag = index === 1 && tags[0] === "scenery";
+    const tag = isSceneTag ? rawTag : normalizeTagValue(rawTag);
+    if (!tag || tag === "foreground_objects" || (!isSceneTag && (relationalTag.test(tag) || (optionalConditionTag.test(tag) && !physicalLightTag.test(tag))))) return;
+    if (!tags.includes(tag)) tags.push(tag);
+  });
+  return tags.slice(0, 8);
+}
+
+function normalizeTagValue(value) {
+  const tag = String(value || "")
+    .replace(/^(?:camera_(?:very_)?close|close_(?:eye_level|front_facing|view))(?:_|$)/i, "")
+    .replace(/^eye_level_(?:daytime_)?view$/i, "")
+    .replace(/^facing_/i, "")
+    .replace(/_(?:viewed_behind|visible(?:_through|_beyond)?|facing(?:_camera)?|behind|far_below|below|beyond|above|beside|near|along)(?:_|$).*$/i, "")
+    .replace(/^several_/i, "")
+    .replace(/_(?:running|rising)$/i, "")
+    .replace(/^(?:view|close|eye_level)$/i, "")
+    .replace(/^_+|_+$/g, "");
+  if (/^(?:dim_sum|soft_drink|compact_disc|natural_history)(?:_|$)/i.test(tag)) return tag;
+  return tag
+    .replace(/^(?:(?:clean|warm|soft|bright|dark|dim|quiet|everyday|practical|casual|generic|lively|relaxed|cinematic|dramatic|detailed|spacious|compact|simple|natural|elegant|nostalgic|historical|historic|illuminated|calm)_)+/i, "")
+    .replace(/_(?:atmosphere|mood)$/i, "")
+    .replace(/^(?:calm|practical|everyday|casual|generic|relaxed|cinematic|dramatic|detailed|spacious|simple|natural|elegant|nostalgic|historical|historic|travel|documentary|educational|business|atmosphere|mood|space)$/i, "")
+    .replace(/^_+|_+$/g, "");
+}
+
+function neutralizePromptText(value) {
+  return String(value || "")
+    .replace(/\b(?:photorealistic|photo-realistic|realistic|real-world|lifelike|realism)\b/gi, "")
+    .replace(/\bno (?:(?:main|central|close)\s+)?(?:person|people|human subject|athlete|runner|model|character)(?:\s+or logos?)?\b/gi, "")
+    .replace(/\bwithout (?:(?:readable )?text(?:\s+or logos?)?|labels?|logos?)\b/gi, "")
+    .replace(/\bno (?:brand )?(?:(?:readable )?text(?:\s+or logos?)?|labels?|logos?)\b/gi, "")
+    .replace(/^(.+?\bbackground)\s+background\b/i, "$1")
+    .replace(/\bsmall background figures\b/gi, "small secondary figures")
+    .replace(/\bin the background\b/gi, "farther back")
+    .replace(/,\s*(?!(?:[^,.]*\b(?:near|beside|visible|nearest|running lane)\b))[^,.]{0,80}\bforeground(?: space)?(?=,|\.|$)/gi, "")
+    .replace(/\s*Scene with clear foreground objects and usable composition\.\s*/gi, " ")
+    .replace(/\s+,/g, ",")
+    .replace(/,\s*,+/g, ",")
+    .replace(/,\s*([.!?])/g, "$1")
+    .replace(/([.!?])\s*,/g, "$1 ")
+    .replace(/\.\s*\./g, ".")
+    .replace(/^\s*[,.;:]\s*/, "")
+    .replace(/,\s*$/, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/(^|[.!?]\s+)([a-z])/g, (_, prefix, letter) => `${prefix}${letter.toUpperCase()}`)
+    .trim();
+}
+
+function naturalTextFromTags(name, tags) {
+  const sceneName = String(name || "").replace(/\s+Background$/i, "").trim();
+  const nameWords = new Set(normalizedWords(sceneName).trim().split(/\s+/).filter(Boolean));
+  const details = compactTagValues(tags).filter((tag) => {
+    if (tag === "scenery") return false;
+    const words = tag.split("_").filter(Boolean);
+    return !words.every((word) => nameWords.has(word));
+  }).map((tag) => tag.replaceAll("_", " "));
+  if (!details.length) return `${sceneName} background.`;
+  const detailText = details.length === 1
+    ? details[0]
+    : `${details.slice(0, -1).join(", ")}, and ${details.at(-1)}`;
+  return `${sceneName} background with ${detailText}.`;
 }
 
 function duplicates(values) {
@@ -190,13 +268,15 @@ async function inspectSource(source) {
     }
     const id = path.parse(preset.thumbnail).name;
     const override = manual[id];
+    const tags = compactTagValues(tagOverrides[id] ?? override?.tags ?? generateTags(preset)).join(", ");
+    const genericSource = /Scene with clear foreground objects and usable composition\./i.test(preset.text);
     return {
       id,
       name: preset.name,
       group: override?.group ?? classifyGroup(preset),
       thumbnail: preset.thumbnail,
-      text: preset.text,
-      tags: override?.tags ?? generateTags(preset),
+      text: genericSource && tagOverrides[id] ? naturalTextFromTags(preset.name, tags) : neutralizePromptText(preset.text),
+      tags,
       sourcePath: path.join(sourceThumbnailRoot, preset.thumbnail),
     };
   });

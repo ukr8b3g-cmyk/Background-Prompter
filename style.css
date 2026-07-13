@@ -101,6 +101,7 @@ body.dark {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+    flex-wrap: wrap;
     border-radius: var(--k2bg-radius);
 }
 
@@ -141,6 +142,57 @@ body.dark {
     flex-flow: row wrap;
     align-items: baseline;
     gap: 4px 9px;
+}
+
+.k2bg-titlebar-controls {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.k2bg-style-boost {
+    min-width: max-content;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.k2bg-style-boost > span {
+    margin-right: 2px;
+    color: var(--k2bg-muted);
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.k2bg-style-boost button {
+    min-height: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border: var(--button-border-width, 1px) solid var(--button-secondary-border-color, var(--k2bg-border));
+    border-radius: var(--button-large-radius, var(--k2bg-radius));
+    color: var(--button-secondary-text-color, var(--k2bg-text));
+    background: var(--button-secondary-background-fill, var(--k2bg-input));
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.k2bg-style-boost button:hover,
+.k2bg-style-boost button.is-active {
+    color: var(--button-secondary-text-color-hover, var(--k2bg-text));
+    background: var(--button-secondary-background-fill-hover, var(--k2bg-input));
+}
+
+.k2bg-style-boost button.is-active {
+    border-color: var(--k2bg-accent);
+    box-shadow: inset 0 0 0 1px var(--k2bg-accent);
+}
+
+.k2bg-titlebar-actions {
+    padding-left: 12px;
+    border-left: 1px solid var(--k2bg-border);
 }
 
 .k2bg-top-actions {
@@ -285,6 +337,7 @@ body.dark {
 }
 
 body.dark .k2bg-segments button,
+body.dark .k2bg-style-boost button,
 body.dark .k2bg-secondary,
 body.dark .k2bg-pagination button {
     color: var(--k2bg-text);
@@ -294,6 +347,8 @@ body.dark .k2bg-pagination button {
 
 body.dark .k2bg-segments button:hover,
 body.dark .k2bg-segments button.is-active,
+body.dark .k2bg-style-boost button:hover,
+body.dark .k2bg-style-boost button.is-active,
 body.dark .k2bg-secondary:hover,
 body.dark .k2bg-pagination button:hover:not(:disabled) {
     color: var(--k2bg-text);
@@ -631,6 +686,12 @@ body.dark .k2bg-primary:hover {
     grid-template-columns: minmax(0, 1fr) auto auto;
 }
 
+.k2bg-drawer-style-boost {
+    justify-content: flex-end;
+    padding: 5px 0 7px;
+    border-bottom: 1px solid var(--k2bg-border);
+}
+
 .k2bg-drawer-actions > button {
     min-width: 0;
 }
@@ -767,8 +828,19 @@ body.k2bg-standalone .k2bg-titlebar {
 
     .k2bg-titlebar-actions {
         width: 100%;
+        padding-top: 7px;
+        padding-left: 0;
+        border-top: 1px solid var(--k2bg-border);
+        border-left: 0;
         flex-wrap: wrap;
         justify-content: flex-start;
+    }
+
+    .k2bg-titlebar-controls {
+        width: 100%;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
     }
 
     .k2bg-search,

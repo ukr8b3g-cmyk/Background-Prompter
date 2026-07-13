@@ -14,6 +14,10 @@
     const DRAWER_CARD_MAX = 280;
     const TAG_FIRST_PRESETS = new Set(["sd", "xl", "anima"]);
     const NATURAL_FIRST_PRESETS = new Set(["flux", "klein", "qwen", "lumina", "zit", "wan", "ernie", "pid", "krea"]);
+    const STYLE_BOOST_TEXT = {
+        photo: "natural photo look, realistic lighting, real-world materials, camera-based detail",
+        anime: "anime style, clean linework, cel-shaded color",
+    };
     const instanceId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
     const isStandalone = window.location.hash === STANDALONE_HASH;
     const channel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL_NAME) : null;
@@ -35,6 +39,9 @@
             auto: "Auto",
             tagsFirst: "Tags first",
             naturalFirst: "Natural language first",
+            styleBoost: "Style Boost",
+            photo: "Photo",
+            anime: "Anime",
             selectedBackground: "Selected Background",
             edited: "Edited",
             presetOutput: "Preset output",
@@ -96,6 +103,9 @@
             auto: "自動",
             tagsFirst: "タグ優先",
             naturalFirst: "自然文優先",
+            styleBoost: "スタイルブースト",
+            photo: "写真",
+            anime: "アニメ",
             selectedBackground: "選択中の背景",
             edited: "編集済み",
             presetOutput: "プリセット出力",
@@ -157,6 +167,7 @@
         totalAvailable: 592,
         selectedName: "",
         profile: "auto",
+        styleBoost: "none",
         uiPreset: "",
         checkpoint: "",
         generated: "",
@@ -263,6 +274,7 @@
             const saved = JSON.parse(localStorage.getItem(STATE_KEY) || "{}");
             state.selectedName = saved.selectedName || "";
             state.profile = ["auto", "tags-first", "natural-first"].includes(saved.profile) ? saved.profile : "auto";
+            state.styleBoost = ["none", "photo", "anime"].includes(saved.styleBoost) ? saved.styleBoost : "none";
             state.uiPreset = saved.uiPreset || "";
             state.checkpoint = saved.checkpoint || "";
             state.drawerGroup = saved.drawerGroup || "All categories";
@@ -295,6 +307,7 @@
                 settingsVersion: SETTINGS_VERSION,
                 selectedName: state.selectedName,
                 profile: state.profile,
+                styleBoost: state.styleBoost,
                 uiPreset: state.uiPreset,
                 checkpoint: state.checkpoint,
                 generated: state.generated,
@@ -363,14 +376,115 @@
 
     function buildPrompt(preset) {
         if (!preset) return "";
-        const tags = String(preset.tags || "")
-            .split(",")
-            .map((tag) => tag.trim().replaceAll("_", " "))
-            .filter(Boolean)
-            .join(", ");
-        const natural = String(preset.text || "").trim();
-        const parts = resolvedProfile() === "tags-first" ? [tags, natural] : [natural, tags];
-        return parts.filter(Boolean).join(resolvedProfile() === "tags-first" ? ",\n" : "\n");
+        const tagValues = compactTagValues(preset.tags);
+        const tags = tagValues.map((tag) => tag.replaceAll("_", " ")).join(", ");
+        const natural = neutralizePromptText(preset.text);
+        const tagsFirst = resolvedProfile() === "tags-first";
+        const supportingNatural = tagsFirst ? supportingNaturalText(natural, tagValues) : "";
+        const supplementalTags = tagsFirst ? "" : supplementalTagsForNatural(tagValues, natural);
+        const parts = tagsFirst ? [tags, supportingNatural] : [natural, supplementalTags];
+        const separator = tagsFirst ? ",\n" : "\n";
+        const base = parts.filter(Boolean).join(separator);
+        const boost = STYLE_BOOST_TEXT[state.styleBoost] || "";
+        return boost && !base.toLowerCase().includes(boost.toLowerCase())
+            ? [base, boost].filter(Boolean).join(/[.!?]$/.test(base) ? "\n" : separator)
+            : base;
+    }
+
+    function neutralizePromptText(value) {
+        return String(value || "")
+            .replace(/\b(?:photorealistic|photo-realistic|realistic|real-world|lifelike|realism)\b/gi, "")
+            .replace(/\bno (?:(?:main|central|close)\s+)?(?:person|people|human subject|athlete|runner|model|character)(?:\s+or logos?)?\b/gi, "")
+            .replace(/\bwithout (?:(?:readable )?text(?:\s+or logos?)?|labels?|logos?)\b/gi, "")
+            .replace(/\bno (?:brand )?(?:(?:readable )?text(?:\s+or logos?)?|labels?|logos?)\b/gi, "")
+            .replace(/^(.+?\bbackground)\s+background\b/i, "$1")
+            .replace(/\bsmall background figures\b/gi, "small secondary figures")
+            .replace(/\bin the background\b/gi, "farther back")
+            .replace(/,\s*(?!(?:[^,.]*\b(?:near|beside|visible|nearest|running lane)\b))[^,.]{0,80}\bforeground(?: space)?(?=,|\.|$)/gi, "")
+            .replace(/\s*Scene with clear foreground objects and usable composition\.\s*/gi, " ")
+            .replace(/\s+,/g, ",")
+            .replace(/,\s*,+/g, ",")
+            .replace(/,\s*([.!?])/g, "$1")
+            .replace(/([.!?])\s*,/g, "$1 ")
+            .replace(/\.\s*\./g, ".")
+            .replace(/^\s*[,.;:]\s*/, "")
+            .replace(/,\s*$/, "")
+            .replace(/\s{2,}/g, " ")
+            .replace(/(^|[.!?]\s+)([a-z])/g, (_, prefix, letter) => `${prefix}${letter.toUpperCase()}`)
+            .trim();
+    }
+
+    function compactTagValues(value) {
+        const relationalTag = /(?:^|_)(?:foreground(?:_|$)|view_(?:from|last|middle)(?:_|$)|slightly_(?:downward|upward)_view(?:_|$)|toward(?:_|$)|receding(?:_|$)|becoming(?:_|$)|last_position(?:_|$)|placed(?:_|$)|facing_camera(?:_|$)|centered(?:_|$)|distance(?:_|$)|clearly(?:_|$)|kept(?:_|$)|filling(?:_|$))/i;
+        const optionalConditionTag = /(?:^|_)(?:light|lights|lighting|daylight|sunlight|moonlight|night|morning|evening|dawn|dusk|sunset|midnight|golden_hour|blue_hour)(?:_|$)/i;
+        const physicalLightTag = /(?:^|_)(?:lamps?|lanterns?|torches?|candles?|neon|traffic_lights?|surgical_lights?|stage_lights?|machine_lights?|lightbulbs?)(?:_|$)/i;
+        const tags = [];
+        String(value || "").split(",").forEach((item, index) => {
+            const rawTag = item.trim().toLowerCase();
+            const isSceneTag = index === 1 && tags[0] === "scenery";
+            const tag = isSceneTag ? rawTag : normalizeTagValue(rawTag);
+            if (!tag || tag === "foreground_objects" || (!isSceneTag && (relationalTag.test(tag) || (optionalConditionTag.test(tag) && !physicalLightTag.test(tag))))) return;
+            if (!tags.includes(tag)) tags.push(tag);
+        });
+        return tags.slice(0, 8);
+    }
+
+    function normalizeTagValue(value) {
+        const tag = String(value || "")
+            .replace(/^(?:camera_(?:very_)?close|close_(?:eye_level|front_facing|view))(?:_|$)/i, "")
+            .replace(/^eye_level_(?:daytime_)?view$/i, "")
+            .replace(/^facing_/i, "")
+            .replace(/_(?:viewed_behind|visible(?:_through|_beyond)?|facing(?:_camera)?|behind|far_below|below|beyond|above|beside|near|along)(?:_|$).*$/i, "")
+            .replace(/^several_/i, "")
+            .replace(/_(?:running|rising)$/i, "")
+            .replace(/^(?:view|close|eye_level)$/i, "")
+            .replace(/^_+|_+$/g, "");
+        if (/^(?:dim_sum|soft_drink|compact_disc|natural_history)(?:_|$)/i.test(tag)) return tag;
+        return tag
+            .replace(/^(?:(?:clean|warm|soft|bright|dark|dim|quiet|everyday|practical|casual|generic|lively|relaxed|cinematic|dramatic|detailed|spacious|compact|simple|natural|elegant|nostalgic|historical|historic|illuminated|calm)_)+/i, "")
+            .replace(/_(?:atmosphere|mood)$/i, "")
+            .replace(/^(?:calm|practical|everyday|casual|generic|relaxed|cinematic|dramatic|detailed|spacious|simple|natural|elegant|nostalgic|historical|historic|travel|documentary|educational|business|atmosphere|mood|space)$/i, "")
+            .replace(/^_+|_+$/g, "");
+    }
+
+    function promptWords(value) {
+        const aliases = { shelves: "shelf", lighting: "light", lights: "light", indoors: "indoor", outdoors: "outdoor" };
+        return String(value || "").toLowerCase().replaceAll("_", " ").match(/[a-z0-9]+/g)?.map((word) => {
+            if (aliases[word]) return aliases[word];
+            return word.length > 3 && word.endsWith("s") && !word.endsWith("ss") ? word.slice(0, -1) : word;
+        }) || [];
+    }
+
+    function supportingNaturalText(natural, tagValues) {
+        const tagWords = new Set(promptWords(tagValues.join(" ")));
+        const stopWords = new Set(["a", "an", "the", "of", "and", "with", "in", "on", "at", "to", "for", "from", "as", "its", "into", "only"]);
+        const spatial = /\b(?:left|right|behind|beyond|below|above|between|under|over|across|along|around|through|toward|towards|near|nearest|far|center|central|middle|side|foreground|background|distance|depth|perspective|row|facing|receding|leading|framing|placed|visible|view from|open space)\b/i;
+        const spatialWithoutForeground = /\b(?:left|right|behind|beyond|below|above|between|under|over|across|along|around|through|toward|towards|near|nearest|far|center|central|middle|side|distance|depth|perspective|row|facing|receding|leading|framing|placed|visible|view from|open space)\b/i;
+        const text = natural
+            .replace(/^.*?\bbackground\b(?:\s+with)?\s*[.,]?\s*/i, "")
+            .replace(/Scene with clear foreground objects and usable composition\.?/gi, "")
+            .trim();
+        if (!text) return "";
+        const clauses = text.split(/[.,;]+/).map((clause) => clause.trim()).filter(Boolean).filter((clause) => {
+            if (!spatial.test(clause)) return false;
+            const words = promptWords(clause).filter((word) => !stopWords.has(word));
+            const covered = words.length && words.filter((word) => tagWords.has(word)).length / words.length >= 0.75;
+            if (covered) return false;
+            if (/\bforeground\b/i.test(clause) && !spatialWithoutForeground.test(clause) && words.length <= 4) return false;
+            return true;
+        });
+        if (!clauses.length) return "";
+        const result = clauses.join(", ");
+        return `${result.charAt(0).toUpperCase()}${result.slice(1)}.`;
+    }
+
+    function supplementalTagsForNatural(tagValues, natural) {
+        const naturalWords = new Set(promptWords(natural));
+        if (/\b(?:background|scene|scenery)\b/i.test(natural)) naturalWords.add("scenery");
+        return tagValues.filter((tag) => {
+            const words = promptWords(tag);
+            return words.length && !words.every((word) => naturalWords.has(word));
+        }).map((tag) => tag.replaceAll("_", " ")).join(", ");
     }
 
     function setGeneratedDraft({ preserveSaved = false } = {}) {
@@ -425,6 +539,19 @@
         state.profile = profile;
         setGeneratedDraft();
         lastAutoProfile = resolvedProfile();
+        persistState();
+        refreshAll();
+        broadcastState();
+    }
+
+    function changeStyleBoost(value) {
+        if (!["photo", "anime"].includes(value)) return;
+        if (state.dirty && !window.confirm(t("confirmRegenerate"))) {
+            refreshStyleBoostControls();
+            return;
+        }
+        state.styleBoost = state.styleBoost === value ? "none" : value;
+        setGeneratedDraft();
         persistState();
         refreshAll();
         broadcastState();
@@ -507,6 +634,23 @@
             <option value="natural-first"${state.profile === "natural-first" ? " selected" : ""}>${t("naturalFirst")}</option>`;
     }
 
+    function styleBoostMarkup(extraClass = "") {
+        return `
+            <div class="k2bg-style-boost${extraClass ? ` ${extraClass}` : ""}" role="group" aria-label="${t("styleBoost")}">
+                <span>${t("styleBoost")}</span>
+                <button type="button" data-k2bg-action="style-boost" data-value="photo" aria-pressed="${state.styleBoost === "photo"}">${t("photo")}</button>
+                <button type="button" data-k2bg-action="style-boost" data-value="anime" aria-pressed="${state.styleBoost === "anime"}">${t("anime")}</button>
+            </div>`;
+    }
+
+    function refreshStyleBoostControls() {
+        queryAll('[data-k2bg-action="style-boost"]').forEach((button) => {
+            const active = button.dataset.value === state.styleBoost;
+            button.classList.toggle("is-active", active);
+            button.setAttribute("aria-pressed", String(active));
+        });
+    }
+
     function editorActionMarkup({ compact = false } = {}) {
         const insertActions = compact
             ? `<button type="button" class="k2bg-primary" data-k2bg-action="insert" data-target="${escapeHtml(state.target)}">${t("insert", { target: state.target })}</button>`
@@ -550,9 +694,12 @@
             <section class="k2bg-shell">
                 <header class="k2bg-titlebar">
                     <div class="k2bg-titlecopy"><h1>${APP_TITLE}</h1><span>${t("appSubtitle")}</span></div>
-                    <div class="k2bg-top-actions k2bg-titlebar-actions">
-                        ${editorActionMarkup()}
-                        <button type="button" class="k2bg-secondary" data-k2bg-action="standalone">${t("standalone")}</button>
+                    <div class="k2bg-titlebar-controls">
+                        ${styleBoostMarkup()}
+                        <div class="k2bg-top-actions k2bg-titlebar-actions">
+                            ${editorActionMarkup()}
+                            <button type="button" class="k2bg-secondary" data-k2bg-action="standalone">${t("standalone")}</button>
+                        </div>
                     </div>
                 </header>
                 <div class="k2bg-toolbar">
@@ -602,6 +749,7 @@
         mount.style.setProperty("--k2bg-card-min", `${state.cardSize}px`);
         mount.querySelector("[data-k2bg-count]").textContent = `${filtered.length} / ${state.totalAvailable}`;
         mount.querySelectorAll('[data-k2bg-action="view"]').forEach((button) => button.classList.toggle("is-active", button.dataset.view === state.view));
+        refreshStyleBoostControls();
         mount.querySelector("[data-k2bg-grid-wrap]").innerHTML = visible.length ? `
             ${pagination ? pagination.replace('class="k2bg-pagination"', 'class="k2bg-pagination is-top"') : ""}
             <div class="k2bg-grid">${visible.map((item) => cardMarkup(item)).join("")}</div>
@@ -750,6 +898,7 @@
                 <div class="k2bg-drawer-resizer" role="separator" aria-orientation="vertical" aria-label="${t("resizeDrawer")}" tabindex="0"></div>
                 <div class="k2bg-drawer-top">
                     <header><div><span>${t("quickBackgrounds")}</span><h2 id="k2bg-drawer-title">${state.target}</h2></div><button type="button" class="k2bg-secondary" data-k2bg-action="close">${t("close")}</button></header>
+                    ${styleBoostMarkup("k2bg-drawer-style-boost")}
                     <div class="k2bg-top-actions k2bg-drawer-actions">${editorActionMarkup({ compact: true })}</div>
                 </div>
                 <div class="k2bg-drawer-toolbar">
@@ -769,6 +918,7 @@
         initDrawerResize(host.querySelector(".k2bg-drawer"));
         renderDrawerGrid();
         renderDrawerEditor();
+        refreshStyleBoostControls();
     }
 
     function refreshAll() {
@@ -778,6 +928,7 @@
             renderDrawerGrid();
             renderDrawerEditor();
         }
+        refreshStyleBoostControls();
     }
 
     function activateBackgroundTab() {
@@ -873,6 +1024,7 @@
         else if (action === "insert") requestInsert(button.dataset.target || state.target);
         else if (action === "copy") copyDraft();
         else if (action === "reset") resetDraft();
+        else if (action === "style-boost") changeStyleBoost(button.dataset.value);
         else if (action === "page") { state.page += button.dataset.page === "next" ? 1 : -1; refreshFullApp(); }
     }
 
@@ -924,6 +1076,7 @@
             type: "state",
             selectedName: state.selectedName,
             profile: state.profile,
+            styleBoost: state.styleBoost,
             uiPreset: state.uiPreset,
             checkpoint: state.checkpoint,
             generated: state.generated,
@@ -939,6 +1092,7 @@
         if (message.type === "state") {
             if (state.presets.some((item) => item.name === message.selectedName)) state.selectedName = message.selectedName;
             state.profile = message.profile || state.profile;
+            state.styleBoost = ["none", "photo", "anime"].includes(message.styleBoost) ? message.styleBoost : state.styleBoost;
             state.uiPreset = message.uiPreset || state.uiPreset;
             state.checkpoint = message.checkpoint || state.checkpoint;
             state.generated = message.generated || buildPrompt(selectedPreset());
