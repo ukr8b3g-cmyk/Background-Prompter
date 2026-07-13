@@ -76,7 +76,7 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 
 [Back to English](#background-prompter)
 
-![Background Prompterの画面]<img width="1794" height="1567" alt="Clip_5" src="https://github.com/user-attachments/assets/6bc0656e-0ede-4fdc-9b6b-3f36ca233c00" />
+<img width="1794" height="1567" alt="Background Prompterの画面" src="https://github.com/user-attachments/assets/6bc0656e-0ede-4fdc-9b6b-3f36ca233c00" />
 
 
 Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026年7月現在、画像付き背景プリセットを592件収録**しています。背景を画像で選び、モデルに合わせたプロンプトを編集してtxt2img / img2imgへ挿入できます。
