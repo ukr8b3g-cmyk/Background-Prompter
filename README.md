@@ -54,6 +54,10 @@ Reload the WebUI after changing Localization. Preset names and prompt text remai
 
 Select **Open in new tab**, move the new tab to another display, and continue browsing, selecting, and inserting prompts. Keep the original WebUI open and use the same browser and browser profile for both windows so tab communication remains available.
 
+The picker inserts only into the WebUI tab that opened it. Focusing another WebUI does not change the recipient. Different WebUI base paths on the same origin have separate communication and browser storage. Draft, selected background, output format, and Style Boost are synchronized within the original WebUI session and its picker tabs. Favorites and recent items are shared among WebUI tabs at the same base path. Each WebUI owns its current model/UI Preset; the picker uses its original WebUI's metadata for Auto output.
+
+The connection status is shown in the picker. After reloading the original WebUI, select **Reconnect** in the picker. Closing the original tab never redirects insertions to another tab. If it is unavailable, reopen the picker with **Open in new tab** from the intended WebUI. A picker opened with the old bare `#background-prompter` bookmark must also be reopened this way. If an insertion times out, check the original prompt before inserting again: the insertion may have succeeded even if its acknowledgment was lost. Automatic insertion retries are not performed.
+
 ## Installation
 
 Open **Extensions → Install from URL** and enter:
@@ -68,6 +72,8 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 - Prompt insertion occurs at the current cursor position; inserting identical content repeatedly creates duplicates
 - Changing the background or output format while an edit is in progress prompts you for confirmation before discarding it
 - Favorites, recent items, thumbnail size, panel width, and Style Boost are stored in the browser
+- Edited drafts, including an intentionally empty draft, survive reload in the same WebUI session
+- If presets fail to load, use **Retry loading**; a page reload is not required
 - Presets are stored in **data/background_presets.json** and preview images in **assets/thumbnails/**
 
 ---
@@ -128,6 +134,10 @@ Localization変更後はWebUIを再読み込みしてください。プリセッ
 
 `Open in new tab`で開いた画面をセカンドディスプレイへ移動して、そのまま検索・選択・挿入できます。元のWebUI画面は開いたままにし、両方を同じブラウザーと同じプロファイルで使用してください。ボタンから開けばChrome同士、Edge同士になり、タブ間通信が保たれます。
 
+挿入先は別タブを開いた元のWebUIです。他のWebUIへfocusを移しても変わりません。同じoriginでもbase pathが違うWebUIは、通信とブラウザー内の保存先を分けています。編集draft、選択中の背景、出力形式、Style Boostは元のWebUIとそこから開いたpicker間で同期し、お気に入りと最近使用は同じbase pathのWebUI間で共有します。modelとUI Presetは各WebUIが管理し、pickerのAuto出力は元のWebUIの情報を使います。
+
+pickerには接続状態を表示します。元のWebUIを再読み込みしたら、pickerの`再接続`を押してください。元のタブを閉じても、別のWebUIへ挿入先が切り替わることはありません。元の画面へ接続できない場合は、挿入先のWebUIの`別タブで開く`から開き直してください。旧形式の`#background-prompter`だけのブックマークも開き直しが必要です。挿入の応答が途絶えた場合、挿入自体は成功している可能性があるため、再挿入前に元のプロンプト欄を確認してください。挿入は自動で再送しません。
+
 ### インストール
 
 WebUIの`Extensions → Install from URL`へ、次のURLを入力してインストールします。
@@ -144,5 +154,24 @@ https://github.com/ukr8b3g-cmyk/Background-Prompter
 - 挿入は現在のカーソル位置です。同じ内容を繰り返し挿入すると重複します。
 - 編集中に背景または出力形式を変える場合は、破棄確認が表示されます。
 - お気に入り、最近使用、サムネイルサイズ、パネル幅、Style Boostはブラウザー内に保存されます。
+- 編集draftは、意図して空にした内容も含め、同じWebUIセッションの再読み込み後に復元します。
+- プリセットを読み込めなかった場合は`読込を再試行`を押せます。ページ全体の再読み込みは不要です。
 
 プリセット定義は`data/background_presets.json`、画像は`assets/thumbnails/`にあります。
+
+## Development checks
+
+The dependency-free regression suite runs the shipped JavaScript in isolated VM contexts with the real message handlers and WebUI update hooks:
+
+```sh
+node --check javascript/krea2_backgrounds.js
+node --test tests/regression.test.cjs
+```
+
+For real DOM, storage/BroadcastChannel, multiple tabs, focus/selection, reload, retry, and remount checks, run the isolated Chromium fixture using an existing Chrome/Chromium executable:
+
+```sh
+CHROME_BIN=/path/to/chrome node tests/browser.cjs
+```
+
+On PowerShell, set `$env:CHROME_BIN` first. No npm install is needed (Node 24 or newer). The fixture starts a temporary loopback server and a separate headless browser profile, then closes both. It uses a small preset dataset and mocked Gradio hooks/controls; it does not launch Forge, touch user prompts/styles/settings, or generate images. Passing fixture tests is not a live Forge Neo/ReForge integration or GPU test. GitHub Actions runs both suites on pushes to main and pull requests.

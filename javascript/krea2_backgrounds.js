@@ -4,10 +4,11 @@
     const APP_ID = "k2bg-app";
     const APP_TITLE = "Background Prompter";
     const DRAWER_ID = "k2bg-drawer-host";
-    const CHANNEL_NAME = "background-prompter";
-    const STATE_KEY = "k2bg_state_v1";
-    const EVENT_KEY = "k2bg_event_v1";
-    const OWNER_KEY = "k2bg_owner_v1";
+    // Scope transport and saved data to this WebUI's base path on the origin.
+    const scope = window.location.pathname.replace(/\/$/, "") || "/";
+    const CHANNEL_NAME = `background-prompter:${scope}`;
+    const SHARED_KEY = `k2bg_shared_v2:${scope}`;
+    const EVENT_KEY = `k2bg_event_v2:${scope}`;
     const STANDALONE_HASH = "#background-prompter";
     const SETTINGS_VERSION = 2;
     const DRAWER_CARD_MIN = 130;
@@ -18,8 +19,23 @@
         photo: "natural photo look, realistic lighting, real-world materials, camera-based detail",
         anime: "anime style, clean linework, cel-shaded color",
     };
-    const instanceId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
-    const isStandalone = window.location.hash === STANDALONE_HASH;
+    if (document.documentElement.dataset.k2bgScriptAttached === "true") return;
+    document.documentElement.dataset.k2bgScriptAttached = "true";
+    const newId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+    const instanceId = newId();
+    const hash = window.location.hash;
+    const isStandalone = hash === STANDALONE_HASH || hash.startsWith(`${STANDALONE_HASH}?`);
+    const link = new URLSearchParams(isStandalone ? hash.split("?")[1] || "" : "");
+    const sessionKey = `k2bg_host_v2:${scope}`;
+    let hostSessionId = isStandalone ? link.get("host") || "" : "";
+    if (!isStandalone) {
+        try {
+            hostSessionId = sessionStorage.getItem(sessionKey) || newId();
+            sessionStorage.setItem(sessionKey, hostSessionId);
+        } catch { hostSessionId = newId(); }
+    }
+    const STATE_KEY = `k2bg_state_v2:${scope}:${hostSessionId || instanceId}`;
+    let hostInstanceId = isStandalone ? link.get("page") || "" : instanceId;
     const channel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL_NAME) : null;
 
     const STRINGS = {
@@ -78,6 +94,13 @@
             promptNotFound: "The {target} prompt field was not found.",
             sending: "Sending to {target}...",
             noResponse: "The original WebUI tab did not respond.",
+            disconnected: "Original WebUI unavailable. Keep it open, then reconnect. If insertion timed out, check its prompt before inserting again.",
+            connected: "Connected to the original WebUI.",
+            connecting: "Connecting to the original WebUI...",
+            reconnect: "Reconnect",
+            unlinked: "Open this picker using Open in new tab in the original WebUI.",
+            ambiguous: "Multiple WebUI tabs share this session. Open a new picker from the intended WebUI.",
+            retry: "Retry loading",
             copied: "Copied.",
             copyFailed: "Could not copy.",
             loadFailed: "Background Prompter could not be loaded.",
@@ -142,6 +165,13 @@
             promptNotFound: "{target}のプロンプト欄が見つかりません。",
             sending: "{target}へ送信しています...",
             noResponse: "元のWebUIタブから応答がありません。",
+            disconnected: "元のWebUIへ接続できません。元の画面を開いて再接続してください。挿入の応答が途絶えた場合は、再挿入前にプロンプト欄を確認してください。",
+            connected: "元のWebUIへ接続しています。",
+            connecting: "元のWebUIへ接続しています...",
+            reconnect: "再接続",
+            unlinked: "元のWebUIの「別タブで開く」から、この画面を開いてください。",
+            ambiguous: "同じセッションのWebUIが複数あります。挿入先のWebUIから別タブを開き直してください。",
+            retry: "読込を再試行",
             copied: "コピーしました。",
             copyFailed: "コピーできませんでした。",
             loadFailed: "Background Prompterを読み込めませんでした。",
@@ -160,6 +190,17 @@
     let lastAutoProfile = "";
     let pendingInsertRequestId = "";
     let uiLanguage = "en";
+    let hasSavedDraft = false;
+    let storedStateLoaded = false;
+    let initializing = false;
+    let initializationError = null;
+    let connectRequestId = "";
+    let connectTimer = null;
+    let connectionStatus = "unlinked";
+    const connectCandidates = new Map();
+    // Bounded deduplication only covers transport retries of the same request.
+    // Explicit new insertions still create duplicates, as documented.
+    const insertResults = new Map();
 
     const state = {
         ready: false,
@@ -271,19 +312,18 @@
 
     function loadStoredState() {
         try {
-            const saved = JSON.parse(localStorage.getItem(STATE_KEY) || "{}");
+            const saved = JSON.parse(localStorage.getItem(STATE_KEY) || localStorage.getItem("k2bg_state_v1") || "{}");
+            const shared = JSON.parse(localStorage.getItem(SHARED_KEY) || "null") || saved;
             state.selectedName = saved.selectedName || "";
             state.profile = ["auto", "tags-first", "natural-first"].includes(saved.profile) ? saved.profile : "auto";
             state.styleBoost = ["none", "photo", "anime"].includes(saved.styleBoost) ? saved.styleBoost : "none";
-            state.uiPreset = saved.uiPreset || "";
-            state.checkpoint = saved.checkpoint || "";
             state.drawerGroup = saved.drawerGroup || "All categories";
             state.drawerCardSize = Number(saved.settingsVersion) >= SETTINGS_VERSION
                 ? clamp(Number(saved.drawerCardSize), DRAWER_CARD_MIN, DRAWER_CARD_MAX, DRAWER_CARD_MIN)
                 : DRAWER_CARD_MIN;
             state.drawerWidth = clamp(Number(saved.drawerWidth), 320, Math.max(320, window.innerWidth * 0.94), 560);
-            state.favorites = new Set(Array.isArray(saved.favorites) ? saved.favorites : []);
-            state.recent = Array.isArray(saved.recent) ? saved.recent.slice(0, 20) : [];
+            state.favorites = new Set(Array.isArray(shared.favorites) ? shared.favorites : []);
+            state.recent = Array.isArray(shared.recent) ? shared.recent.slice(0, 20) : [];
             state.inserted = { txt2img: null, img2img: null };
             ["txt2img", "img2img"].forEach((target) => {
                 const inserted = saved.inserted?.[target];
@@ -292,6 +332,7 @@
                 }
             });
             if (saved.selectedName && typeof saved.draft === "string") {
+                hasSavedDraft = true;
                 state.draft = saved.draft;
                 state.generated = saved.generated || "";
                 state.dirty = Boolean(saved.dirty);
@@ -308,8 +349,6 @@
                 selectedName: state.selectedName,
                 profile: state.profile,
                 styleBoost: state.styleBoost,
-                uiPreset: state.uiPreset,
-                checkpoint: state.checkpoint,
                 generated: state.generated,
                 draft: state.draft,
                 dirty: state.dirty,
@@ -320,6 +359,7 @@
                 recent: state.recent,
                 inserted: state.inserted,
             }));
+            localStorage.setItem(SHARED_KEY, JSON.stringify({ favorites: [...state.favorites], recent: state.recent }));
         } catch (error) {
             console.warn("Background Prompter: state could not be saved", error);
         }
@@ -337,7 +377,7 @@
     }
 
     function checkpointName() {
-        return liveCheckpointName() || state.checkpoint;
+        return isStandalone ? state.checkpoint : liveCheckpointName() || state.checkpoint;
     }
 
     function liveUiPresetName() {
@@ -349,7 +389,7 @@
     }
 
     function uiPresetName() {
-        return liveUiPresetName() || state.uiPreset;
+        return isStandalone ? state.uiPreset : liveUiPresetName() || state.uiPreset;
     }
 
     function resolvedProfile() {
@@ -490,7 +530,7 @@
     function setGeneratedDraft({ preserveSaved = false } = {}) {
         const preset = selectedPreset();
         const generated = buildPrompt(preset);
-        if (preserveSaved && state.dirty && state.draft && state.selectedName === preset?.name) {
+        if (preserveSaved && hasSavedDraft && state.dirty && state.selectedName === preset?.name) {
             state.generated = state.generated || generated;
             state.dirty = state.draft !== state.generated;
             return;
@@ -574,7 +614,11 @@
 
     function syncEditorValue(source) {
         queryAll("[data-k2bg-editor]").forEach((editor) => {
-            if (editor !== source && editor.value !== state.draft) editor.value = state.draft;
+            if (editor === source || editor.value === state.draft) return;
+            const focused = editor === (appRoot().activeElement || document.activeElement);
+            const { selectionStart, selectionEnd, selectionDirection } = editor;
+            editor.value = state.draft;
+            if (focused) editor.setSelectionRange(selectionStart, selectionEnd, selectionDirection);
         });
     }
 
@@ -658,7 +702,8 @@
                <button type="button" class="k2bg-primary" data-k2bg-action="insert" data-target="img2img">${t("insert", { target: "img2img" })}</button>`;
         return `${insertActions}
             <button type="button" class="k2bg-secondary" data-k2bg-action="copy">${t("copy")}</button>
-            <button type="button" class="k2bg-secondary" data-k2bg-action="reset">${t("reset")}</button>`;
+            <button type="button" class="k2bg-secondary" data-k2bg-action="reset">${t("reset")}</button>
+            ${isStandalone ? `<button type="button" class="k2bg-secondary" data-k2bg-action="reconnect">${t("reconnect")}</button>` : ""}`;
     }
 
     function editorMarkup({ compact = false } = {}) {
@@ -692,6 +737,7 @@
         mount.dataset.ready = "true";
         mount.innerHTML = `
             <section class="k2bg-shell">
+                ${isStandalone ? `<p class="k2bg-notice" data-k2bg-connection role="status">${escapeHtml(t(connectionStatus))}</p>` : ""}
                 <header class="k2bg-titlebar">
                     <div class="k2bg-titlecopy"><h1>${APP_TITLE}</h1><span>${t("appSubtitle")}</span></div>
                     <div class="k2bg-titlebar-controls">
@@ -723,10 +769,13 @@
         category.innerHTML = groups().map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(groupLabel(item))}</option>`).join("");
         category.value = state.group;
         mount.querySelector('[data-k2bg-action="search"]').value = state.query;
-        mount.addEventListener("click", handleAction);
-        mount.addEventListener("input", handleInput);
-        mount.addEventListener("change", handleChange);
-        mount.addEventListener("keydown", handleKeydown);
+        if (mount.dataset.listenersReady !== "true") {
+            mount.addEventListener("click", handleAction);
+            mount.addEventListener("input", handleInput);
+            mount.addEventListener("change", handleChange);
+            mount.addEventListener("keydown", handleKeydown);
+            mount.dataset.listenersReady = "true";
+        }
         refreshFullApp();
     }
 
@@ -922,6 +971,13 @@
     }
 
     function refreshAll() {
+        const focused = appRoot().activeElement || document.activeElement;
+        const region = focused?.closest?.(`[id="${APP_ID}"], [id="${DRAWER_ID}"]`);
+        const selector = focused?.matches?.("[data-k2bg-editor]") ? "[data-k2bg-editor]"
+            : ["INPUT", "SELECT", "TEXTAREA"].includes(focused?.tagName) && focused.dataset.k2bgAction
+                ? `[data-k2bg-action="${focused.dataset.k2bgAction}"]` : "";
+        const selection = selector && Number.isInteger(focused.selectionStart)
+            ? [focused.selectionStart, focused.selectionEnd, focused.selectionDirection] : null;
         refreshFullApp();
         ensureCompactBars();
         if (state.drawerOpen) {
@@ -929,6 +985,11 @@
             renderDrawerEditor();
         }
         refreshStyleBoostControls();
+        if (region && selector) {
+            const replacement = region.querySelector(selector);
+            replacement?.focus({ preventScroll: true });
+            if (selection) replacement?.setSelectionRange(...selection);
+        }
     }
 
     function activateBackgroundTab() {
@@ -949,22 +1010,37 @@
 
     function openStandalone() {
         const url = new URL(window.location.href);
-        url.hash = STANDALONE_HASH;
+        // A picker opened from a picker keeps its original recipient.
+        url.hash = `${STANDALONE_HASH}?${new URLSearchParams({ host: hostSessionId, page: hostInstanceId })}`;
         window.open(url.href, "_blank", "noopener");
     }
 
-    function insertIntoPrompt(target, text) {
+    function insertIntoPrompt(target, text, { profile = resolvedProfile(), selectedName = state.selectedName } = {}) {
+        if (!["txt2img", "img2img"].includes(target) || typeof text !== "string") return false;
         const textarea = appRoot().getElementById(`${target}_prompt`)?.querySelector("textarea");
         if (!textarea || !text.trim()) return false;
         const start = Number.isInteger(textarea.selectionStart) ? textarea.selectionStart : textarea.value.length;
         const end = Number.isInteger(textarea.selectionEnd) ? textarea.selectionEnd : start;
         const before = textarea.value.slice(0, start);
-        const separator = start === end && before && !/[\s,]$/.test(before) ? (resolvedProfile() === "tags-first" ? ", " : "\n") : "";
-        textarea.setRangeText(`${separator}${text.trim()}`, start, end, "end");
+        const after = textarea.value.slice(end);
+        const separator = profile === "tags-first" ? ", " : "\n";
+        let content = text.trim();
+        // Keep existing prompt separators; remove only duplicated edge commas
+        // from the inserted text, never from the surrounding user prompt.
+        if (/,\s*$/.test(before)) content = content.replace(/^,+\s*/, "");
+        if (/^\s*,/.test(after)) content = content.replace(/\s*,+$/, "");
+        if (!content) return false;
+        const left = before && !/[\s,]$/.test(before) && !/^[\s,]/.test(content) ? separator
+            : /,$/.test(before) && !/^[\s,]/.test(content) ? " " : "";
+        const right = after && !/^[\s,]/.test(after) && !/[\s,]$/.test(content) ? separator
+            : /,$/.test(content) && after && !/^\s/.test(after) ? " " : "";
+        textarea.setRangeText(`${left}${content}${right}`, start, end, "end");
+        const caret = start + left.length + content.length;
+        textarea.setSelectionRange(caret, caret);
         if (typeof updateInput === "function") updateInput(textarea);
         else textarea.dispatchEvent(new Event("input", { bubbles: true }));
         textarea.focus();
-        state.inserted[target] = { name: state.selectedName, text: text.trim() };
+        state.inserted[target] = { name: selectedName, text: content };
         persistState();
         ensureCompactBars();
         return true;
@@ -979,13 +1055,19 @@
             setNotice(insertIntoPrompt(target, state.draft) ? t("inserted", { target }) : t("promptNotFound", { target }));
             return;
         }
-        const requestId = `${instanceId}-${Date.now()}`;
+        if (pendingInsertRequestId) return;
+        if (connectionStatus !== "connected" || !hostInstanceId) {
+            setNotice(t(connectionStatus));
+            return;
+        }
+        const requestId = newId();
         pendingInsertRequestId = requestId;
-        broadcast({ type: "insert-request", requestId, target, text: state.draft, selectedName: state.selectedName });
+        broadcast({ type: "insert-request", recipient: hostInstanceId, requestId, target, text: state.draft, selectedName: state.selectedName, profile: resolvedProfile() });
         setNotice(t("sending", { target }));
         window.clearTimeout(insertAckTimer);
         insertAckTimer = window.setTimeout(() => {
             pendingInsertRequestId = "";
+            setConnectionStatus("disconnected");
             setNotice(t("noResponse"));
         }, 1800);
     }
@@ -1021,6 +1103,7 @@
         else if (action === "close") closeDrawer();
         else if (action === "full") { closeDrawer(); activateBackgroundTab(); }
         else if (action === "standalone") openStandalone();
+        else if (action === "reconnect") reconnectHost({ discover: true });
         else if (action === "insert") requestInsert(button.dataset.target || state.target);
         else if (action === "copy") copyDraft();
         else if (action === "reset") resetDraft();
@@ -1066,7 +1149,7 @@
     }
 
     function broadcast(message) {
-        const payload = { ...message, source: instanceId, timestamp: Date.now() };
+        const payload = { ...message, scope, session: hostSessionId, source: instanceId, timestamp: Date.now() };
         if (channel) channel.postMessage(payload);
         else localStorage.setItem(EVENT_KEY, JSON.stringify({ ...payload, nonce: Math.random() }));
     }
@@ -1077,8 +1160,6 @@
             selectedName: state.selectedName,
             profile: state.profile,
             styleBoost: state.styleBoost,
-            uiPreset: state.uiPreset,
-            checkpoint: state.checkpoint,
             generated: state.generated,
             draft: state.draft,
             dirty: state.dirty,
@@ -1088,40 +1169,99 @@
     }
 
     function handleBroadcast(message) {
-        if (!message || message.source === instanceId) return;
+        if (!message || message.source === instanceId || message.scope !== scope) return;
+        if (message.recipient && message.recipient !== instanceId) return;
+        const sameSession = Boolean(hostSessionId && message.session === hostSessionId);
+        // Favorites/recent are shared within this base path. Editing and model
+        // metadata belong only to a host and the pickers it opened.
         if (message.type === "state") {
-            if (state.presets.some((item) => item.name === message.selectedName)) state.selectedName = message.selectedName;
-            state.profile = message.profile || state.profile;
-            state.styleBoost = ["none", "photo", "anime"].includes(message.styleBoost) ? message.styleBoost : state.styleBoost;
-            state.uiPreset = message.uiPreset || state.uiPreset;
-            state.checkpoint = message.checkpoint || state.checkpoint;
-            state.generated = message.generated || buildPrompt(selectedPreset());
-            state.draft = typeof message.draft === "string" ? message.draft : state.generated;
-            state.dirty = Boolean(message.dirty);
-            state.favorites = new Set(message.favorites || []);
-            state.recent = Array.isArray(message.recent) ? message.recent : [];
+            if (sameSession) {
+                if (state.presets.some((item) => item.name === message.selectedName)) state.selectedName = message.selectedName;
+                state.profile = ["auto", "tags-first", "natural-first"].includes(message.profile) ? message.profile : state.profile;
+                state.styleBoost = ["none", "photo", "anime"].includes(message.styleBoost) ? message.styleBoost : state.styleBoost;
+                state.generated = typeof message.generated === "string" ? message.generated : buildPrompt(selectedPreset());
+                state.draft = typeof message.draft === "string" ? message.draft : state.generated;
+                state.dirty = Boolean(message.dirty);
+                lastAutoProfile = resolvedProfile();
+            }
+            if (Array.isArray(message.favorites)) state.favorites = new Set(message.favorites);
+            if (Array.isArray(message.recent)) state.recent = message.recent.slice(0, 20);
             persistState();
-            refreshAll();
-        } else if (message.type === "draft" && message.selectedName === state.selectedName) {
-            state.generated = message.generated || state.generated;
+            if (state.ready) refreshAll();
+        } else if (message.type === "draft" && sameSession && message.selectedName === state.selectedName) {
+            state.generated = typeof message.generated === "string" ? message.generated : state.generated;
             state.draft = typeof message.draft === "string" ? message.draft : state.draft;
             state.dirty = Boolean(message.dirty);
             persistState();
             syncEditorValue(null);
             updateDirtyIndicators();
             ensureCompactBars();
-        } else if (message.type === "insert-request" && !isStandalone && localStorage.getItem(OWNER_KEY) === instanceId) {
-            const ok = insertIntoPrompt(message.target, message.text);
-            broadcast({ type: "insert-ack", requestId: message.requestId, ok, target: message.target });
-        } else if (message.type === "insert-ack" && message.requestId === pendingInsertRequestId) {
+        } else if (message.type === "connect-request" && sameSession && !isStandalone && state.ready) {
+            broadcast({ type: "host-ready", recipient: message.source, requestId: message.requestId, uiPreset: state.uiPreset, checkpoint: state.checkpoint });
+        } else if (message.type === "host-ready" && sameSession && isStandalone && message.requestId === connectRequestId) {
+            connectCandidates.set(message.source, message);
+        } else if (message.type === "host-metadata" && sameSession && isStandalone && message.source === hostInstanceId) {
+            applyHostMetadata(message);
+        } else if (message.type === "host-closed" && sameSession && isStandalone && message.source === hostInstanceId) {
+            setConnectionStatus("disconnected");
+        } else if (message.type === "insert-request" && sameSession && !isStandalone && state.ready && message.recipient === instanceId && typeof message.requestId === "string") {
+            const key = `${message.source}:${message.requestId}`;
+            let ok = insertResults.get(key);
+            if (!insertResults.has(key)) {
+                ok = insertIntoPrompt(message.target, message.text, { profile: message.profile, selectedName: message.selectedName });
+                insertResults.set(key, ok);
+                if (insertResults.size > 100) insertResults.delete(insertResults.keys().next().value);
+            }
+            broadcast({ type: "insert-ack", recipient: message.source, requestId: message.requestId, ok, target: message.target });
+        } else if (message.type === "insert-ack" && sameSession && isStandalone && message.source === hostInstanceId && message.recipient === instanceId && message.requestId === pendingInsertRequestId) {
             window.clearTimeout(insertAckTimer);
             pendingInsertRequestId = "";
             setNotice(message.ok ? t("inserted", { target: message.target }) : t("promptNotFound", { target: message.target }));
         }
     }
 
-    function markOwner() {
-        if (!isStandalone) localStorage.setItem(OWNER_KEY, instanceId);
+    function setConnectionStatus(status) {
+        connectionStatus = status;
+        queryAll("[data-k2bg-connection]").forEach((item) => { item.textContent = t(status); });
+    }
+
+    function applyHostMetadata(message) {
+        state.uiPreset = typeof message.uiPreset === "string" ? message.uiPreset : "";
+        state.checkpoint = typeof message.checkpoint === "string" ? message.checkpoint : "";
+        if (state.profile === "auto" && !state.dirty) setGeneratedDraft();
+        lastAutoProfile = resolvedProfile();
+        if (state.ready) refreshAll();
+    }
+
+    function broadcastHostMetadata() {
+        broadcast({ type: "host-metadata", uiPreset: state.uiPreset, checkpoint: state.checkpoint });
+    }
+
+    function reconnectHost({ discover = false } = {}) {
+        if (!isStandalone || pendingInsertRequestId) return;
+        window.clearTimeout(connectTimer);
+        connectCandidates.clear();
+        if (!hostSessionId) { setConnectionStatus("unlinked"); return; }
+        setConnectionStatus("connecting");
+        connectRequestId = newId();
+        // Discovery is explicit after reload; insert requests always address one
+        // exact document. A closed host never falls back to the focused tab.
+        broadcast({ type: "connect-request", requestId: connectRequestId, ...(!discover && hostInstanceId ? { recipient: hostInstanceId } : {}) });
+        connectTimer = window.setTimeout(() => {
+            connectRequestId = "";
+            if (connectCandidates.size !== 1) {
+                hostInstanceId = "";
+                setConnectionStatus(connectCandidates.size ? "ambiguous" : "disconnected");
+                return;
+            }
+            const message = connectCandidates.values().next().value;
+            hostInstanceId = message.source;
+            const url = new URL(window.location.href);
+            url.hash = `${STANDALONE_HASH}?${new URLSearchParams({ host: hostSessionId, page: hostInstanceId })}`;
+            window.history.replaceState(null, "", url.href);
+            applyHostMetadata(message);
+            setConnectionStatus("connected");
+        }, 1800);
     }
 
     async function loadPresets() {
@@ -1132,10 +1272,15 @@
         state.presets = Array.isArray(payload.presets) ? payload.presets : [];
         state.totalAvailable = Number(payload.total_available) || state.presets.length;
         if (!state.presets.length) throw new Error("No background presets were loaded");
-        if (!state.presets.some((item) => item.name === state.selectedName)) state.selectedName = state.presets[3]?.name || state.presets[0].name;
+        if (!state.presets.some((item) => item.name === state.selectedName)) {
+            hasSavedDraft = false;
+            state.selectedName = state.presets[3]?.name || state.presets[0].name;
+        }
         addRecent(state.selectedName);
-        state.uiPreset = liveUiPresetName() || state.uiPreset;
-        state.checkpoint = liveCheckpointName() || state.checkpoint;
+        if (!isStandalone) {
+            state.uiPreset = liveUiPresetName();
+            state.checkpoint = liveCheckpointName();
+        }
         setGeneratedDraft({ preserveSaved: true });
         lastAutoProfile = resolvedProfile();
         state.ready = true;
@@ -1143,10 +1288,11 @@
     }
 
     async function initialize() {
-        if (document.documentElement.dataset.k2bgInitialized === "true") return;
-        document.documentElement.dataset.k2bgInitialized = "true";
+        if (initializing || state.ready) return;
+        initializing = true;
+        document.documentElement.dataset.k2bgInitialized = "loading";
         uiLanguage = detectUiLanguage();
-        loadStoredState();
+        if (!storedStateLoaded) { loadStoredState(); storedStateLoaded = true; }
         try {
             await loadPresets();
             mountFullApp();
@@ -1155,14 +1301,32 @@
             if (isStandalone) {
                 document.body.classList.add("k2bg-standalone");
                 window.setTimeout(activateBackgroundTab, 50);
-            } else {
-                markOwner();
+                reconnectHost();
             }
+            document.documentElement.dataset.k2bgInitialized = "true";
+            initializationError = null;
         } catch (error) {
+            state.ready = false;
+            document.documentElement.dataset.k2bgInitialized = "false";
             console.error("Background Prompter failed to initialize", error);
-            const mount = appRoot().getElementById(APP_ID) || document.getElementById(APP_ID);
-            if (mount) mount.innerHTML = `<div class="k2bg-error">${t("loadFailed")}<br>${escapeHtml(error.message)}</div>`;
+            initializationError = error;
+            renderInitializationError();
+        } finally {
+            initializing = false;
         }
+    }
+
+    function renderInitializationError() {
+        const mount = appRoot().getElementById(APP_ID) || document.getElementById(APP_ID);
+        if (!mount || mount.querySelector("[data-k2bg-retry]")) return;
+        mount.dataset.ready = "false";
+        mount.innerHTML = `<div class="k2bg-error">${t("loadFailed")}<br>${escapeHtml(initializationError?.message)}<br><button type="button" data-k2bg-retry>${t("retry")}</button></div>`;
+        mount.querySelector("[data-k2bg-retry]").addEventListener("click", () => {
+            // Remove the failed UI before retry so a second failure can attach
+            // a fresh one-shot button even on the same mount element.
+            mount.innerHTML = "";
+            initialize();
+        }, { once: true });
     }
 
     if (channel) channel.addEventListener("message", (event) => handleBroadcast(event.data));
@@ -1171,13 +1335,18 @@
             try { handleBroadcast(JSON.parse(event.newValue)); } catch { /* ignore malformed events */ }
         }
     });
-    window.addEventListener("focus", markOwner);
+    window.addEventListener("pagehide", (event) => {
+        if (!isStandalone && !event.persisted) broadcast({ type: "host-closed" });
+    });
 
     onUiLoaded(initialize);
     onAfterUiUpdate(() => {
-        if (!state.ready) return;
-        const currentUiPreset = liveUiPresetName();
-        const currentCheckpoint = liveCheckpointName();
+        if (!state.ready) {
+            if (!initializing && initializationError) renderInitializationError();
+            return;
+        }
+        const currentUiPreset = isStandalone ? state.uiPreset : liveUiPresetName();
+        const currentCheckpoint = isStandalone ? state.checkpoint : liveCheckpointName();
         const uiPresetChanged = Boolean(currentUiPreset && currentUiPreset !== state.uiPreset);
         const checkpointChanged = Boolean(currentCheckpoint && currentCheckpoint !== state.checkpoint);
         if (uiPresetChanged) state.uiPreset = currentUiPreset;
@@ -1194,7 +1363,7 @@
         if (uiPresetChanged || checkpointChanged || generatedChanged) {
             persistState();
             refreshAll();
-            broadcastState();
+            if (!isStandalone) broadcastHostMetadata();
         }
         mountFullApp();
         ensureCompactBars();
