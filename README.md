@@ -175,3 +175,9 @@ CHROME_BIN=/path/to/chrome node tests/browser.cjs
 ```
 
 On PowerShell, set `$env:CHROME_BIN` first. No npm install is needed (Node 24 or newer). The fixture starts a temporary loopback server and a separate headless browser profile, then closes both. It uses a small preset dataset and mocked Gradio hooks/controls; it does not launch Forge, touch user prompts/styles/settings, or generate images. Passing fixture tests is not a live Forge Neo/ReForge integration or GPU test. GitHub Actions runs both suites on pushes to main and pull requests.
+
+## License / ライセンス
+
+The maintainer-authored code, documentation, presets, and all 592 bundled preview images are licensed under the [MIT License](LICENSE), to the extent of rights held. The maintainer reports creating the presets and images with GPT tools; the exact model names are unspecified. See [NOTICE.md](NOTICE.md) for scope and third-party rights.
+
+作者のコード・文書・プリセット・同梱サムネイル592枚は、作者が保有する権利の範囲でMIT対象です。プリセットと画像は本人がGPTを用いて作成したとの申告によります。生成モデルの正式名は未確認です。第三者の既存権利は変更しません。
