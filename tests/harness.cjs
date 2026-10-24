@@ -14,6 +14,7 @@ const instrumented = source.replace(/\}\)\(\);\s*$/, `globalThis.__test = {
     state, instanceId, hostSessionId, scope, initialize, handleBroadcast,
     broadcastState, updateDraft, requestInsert, insertIntoPrompt, openStandalone,
     reconnectHost, resolvedProfile, setGeneratedDraft, persistState,
+    toggleFavorite, addRecent, handleInput, loadStoredState,
     get connectionStatus() { return connectionStatus; },
     get pendingInsertRequestId() { return pendingInsertRequestId; }
 }; })();`);
@@ -58,13 +59,26 @@ function world(mode = 'channel') {
         const p = { listeners, timers, document, controls, events, session, elements, live: true, fetches: 0, opened: '' };
         pages.push(p);
         const localStorage = {
+            get length() { return storage.size; },
+            key: index => [...storage.keys()][index] ?? null,
             getItem: key => storage.get(key) ?? null,
             setItem(key, value) {
+                if (p.storageWriteError) throw new Error('storage write failed');
+                const previous = storage.get(key) ?? null;
                 storage.set(key, String(value));
                 if (key.startsWith('k2bg_event_v2:')) {
                     const payload = JSON.parse(value);
                     sent.push(payload);
                     for (const other of pages) if (other !== p && other.live) queue.push(() => other.emit('storage', { key, newValue: String(value) }));
+                }
+                if (key.startsWith('k2bg_shared_op_v3:') && previous !== String(value)) {
+                    for (const other of pages) if (other !== p && other.live) queue.push(() => other.emit('storage', { key, newValue: String(value) }));
+                }
+            },
+            removeItem(key) {
+                if (p.storageWriteError) throw new Error('storage write failed');
+                if (storage.delete(key) && key.startsWith('k2bg_shared_op_v3:')) {
+                    for (const other of pages) if (other !== p && other.live) queue.push(() => other.emit('storage', { key, newValue: null }));
                 }
             },
         };

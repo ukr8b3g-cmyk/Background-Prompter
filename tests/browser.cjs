@@ -81,6 +81,19 @@ const server = http.createServer((request, response) => {
     window.gradioApp = () => fixtureRoot;
     window.fixtureErrors = []; window.fixtureUpdates = 0;
     window.fixtureMessages = 0; window.fixtureRegistrations = {};
+    // Delay native cross-tab notifications while leaving localStorage writes real.
+    window.fixtureHold = false; window.fixturePending = [];
+    window.fixtureFlush = () => {
+        fixtureHold = false;
+        const pending = fixturePending.splice(0).reverse();
+        pending.forEach(deliver => { deliver(); deliver(); });
+    };
+    addEventListener('storage', event => {
+        if (!fixtureHold) return;
+        event.stopImmediatePropagation();
+        const copy = { key:event.key, oldValue:event.oldValue, newValue:event.newValue, url:event.url, storageArea:localStorage };
+        fixturePending.push(() => dispatchEvent(new StorageEvent('storage', copy)));
+    }, true);
     addEventListener('error', event => fixtureErrors.push(event.message));
     addEventListener('unhandledrejection', event => fixtureErrors.push(String(event.reason)));
     const originalAdd = EventTarget.prototype.addEventListener;
@@ -89,6 +102,13 @@ const server = http.createServer((request, response) => {
         return originalAdd.call(this, type, listener, options);
     };
     if (window.BroadcastChannel) {
+        const originalListen = BroadcastChannel.prototype.addEventListener;
+        BroadcastChannel.prototype.addEventListener = function(type, listener, options) {
+            return originalListen.call(this, type, type === 'message' ? event => {
+                if (fixtureHold) fixturePending.push(() => listener.call(this, event));
+                else listener.call(this, event);
+            } : listener, options);
+        };
         const originalPost = BroadcastChannel.prototype.postMessage;
         BroadcastChannel.prototype.postMessage = function(message) { fixtureMessages++; originalPost.call(this, message); };
     } else {
@@ -206,6 +226,62 @@ async function main() {
             for (const tab of [p, b, otherBase]) assert.deepEqual(await tab.eval('fixtureErrors'), []);
             console.log(`PASS Chromium ${mode}: real tabs, focus/range, both targets, model settle, base paths, empty reload, host reload/reconnect/close`);
             await cdp.send('Target.disposeBrowserContext', { browserContextId });
+        }
+        for (const mode of ['channel', 'storage']) {
+            const { browserContextId } = await cdp.send('Target.createBrowserContext');
+            const a = await create(`${origin}/neo/?mode=${mode}`, browserContextId);
+            const b = await create(`${origin}/neo/?mode=${mode}`, browserContextId);
+            await Promise.all([a.ready(), b.ready()]); await delay(150);
+            const favorite = name => `[data-k2bg-action="favorite"][data-name="${name}"]`;
+            const names = 'JSON.stringify([...__test.state.favorites].sort())';
+            await a.eval('fixtureHold = true'); await b.eval('fixtureHold = true');
+            await Promise.all([a.click(favorite('Forest')), b.click(favorite('Room'))]);
+            await delay(100);
+            assert.ok(await a.eval('fixturePending.length > 0'));
+            assert.ok(await b.eval('fixturePending.length > 0'));
+            await a.eval('fixtureFlush()'); await b.eval('fixtureFlush()');
+            for (const tab of [a,b]) await tab.expect(`${names} === '["Forest","Room"]'`);
+            // Removing one item must not lose an unrelated addition from a stale tab.
+            await a.click(favorite('Room')); await b.expect('!__test.state.favorites.has("Room")');
+            await a.eval('fixtureHold = true'); await b.eval('fixtureHold = true');
+            await Promise.all([a.click(favorite('Forest')), b.click(favorite('Room'))]);
+            await delay(100); await b.eval('fixtureFlush()'); await a.eval('fixtureFlush()');
+            for (const tab of [a,b]) await tab.expect(`${names} === '["Room"]'`);
+            await a.reload(); await a.expect(`${names} === '["Room"]'`);
+            // A stale draft/settings save cannot overwrite favorites.
+            await a.eval('fixtureHold = true'); await b.click(favorite('Forest'));
+            await a.eval('__test.updateDraft("KEEP local draft", null)');
+            await a.close(); await b.close();
+            const restored = await create(`${origin}/neo/?mode=${mode}`, browserContextId); await restored.ready();
+            await restored.expect(`${names} === '["Forest","Room"]'`);
+            const otherBase = await create(`${origin}/reforge/?mode=${mode}`, browserContextId); await otherBase.ready();
+            assert.equal(await otherBase.eval('__test.state.favorites.size'), 0);
+            for (const tab of [restored,otherBase]) assert.deepEqual(await tab.eval('fixtureErrors'), []);
+            await cdp.send('Target.disposeBrowserContext', { browserContextId });
+            console.log(`PASS Chromium ${mode} conflict: delayed/reversed/duplicate notifications, add/add, remove/add, stale draft save, closed writers/reload, base-path isolation`);
+        }
+        {
+            const { browserContextId } = await cdp.send('Target.createBrowserContext');
+            const tab = await create(`${origin}/neo/`, browserContextId); await tab.ready();
+            const legacy = JSON.stringify({ selectedName:'Forest', favorites:['Forest','Missing preset'], recent:['Room','Forest'], profile:'natural-first', draft:'KEEP', dirty:true, settingsVersion:2, drawerCardSize:200, drawerWidth:700 });
+            await tab.eval(`localStorage.clear(); localStorage.setItem('k2bg_state_v1', ${JSON.stringify(legacy)});`);
+            await tab.reload();
+            assert.equal(await tab.eval('__test.state.profile'), 'natural-first');
+            assert.equal(await tab.eval('__test.state.draft'), 'KEEP');
+            assert.equal(await tab.eval('__test.state.drawerWidth'), 700);
+            assert.deepEqual(await tab.eval('[...__test.state.favorites].sort()'), ['Forest','Missing preset']);
+            await tab.eval(`{ const slider = document.querySelector('[data-k2bg-action="card-size"]'); slider.value='228'; slider.dispatchEvent(new Event('input',{bubbles:true})); }`);
+            await tab.click('[data-k2bg-action="drawer"]');
+            await tab.eval(`{ const slider = document.querySelector('#k2bg-drawer-host [data-k2bg-action="drawer-card-size"]'); slider.value='200'; slider.dispatchEvent(new Event('input',{bubbles:true})); }`);
+            await tab.reload();
+            assert.equal(await tab.eval('document.querySelector(\'[data-k2bg-action="card-size"]\').value'), '228');
+            assert.equal(await tab.eval('__test.state.drawerCardSize'), 200);
+            assert.equal(await tab.eval('__test.state.draft'), 'KEEP');
+            assert.equal(await tab.eval('__test.state.dirty'), true);
+            assert.equal(await tab.eval("localStorage.getItem('k2bg_state_v1')"), legacy);
+            assert.deepEqual(await tab.eval('fixtureErrors'), []);
+            await cdp.send('Target.disposeBrowserContext', { browserContextId });
+            console.log('PASS Chromium settings: normal 228/drawer 200 survive reload independently; legacy favorites, missing presets, profile, draft, width and original legacy record preserved');
         }
         const { browserContextId } = await cdp.send('Target.createBrowserContext');
         const failure = await create(`${origin}/failure/?mode=channel`, browserContextId);

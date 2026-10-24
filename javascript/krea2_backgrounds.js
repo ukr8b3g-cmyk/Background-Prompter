@@ -8,6 +8,7 @@
     const scope = window.location.pathname.replace(/\/$/, "") || "/";
     const CHANNEL_NAME = `background-prompter:${scope}`;
     const SHARED_KEY = `k2bg_shared_v2:${scope}`;
+    const SHARED_OP_PREFIX = `k2bg_shared_op_v3:${scope}:`;
     const EVENT_KEY = `k2bg_event_v2:${scope}`;
     const STANDALONE_HASH = "#background-prompter";
     const SETTINGS_VERSION = 2;
@@ -37,6 +38,9 @@
     const STATE_KEY = `k2bg_state_v2:${scope}:${hostSessionId || instanceId}`;
     let hostInstanceId = isStandalone ? link.get("page") || "" : instanceId;
     const channel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL_NAME) : null;
+    const sharedVersions = { favorite: new Map(), recent: new Map() };
+    let sharedClock = 0;
+    let sharedLoaded = false;
 
     const STRINGS = {
         en: {
@@ -310,6 +314,121 @@
         return `${extensionBase}/${path}`;
     }
 
+    function validSharedOperation(op) {
+        return op && (op.kind === "favorite" || op.kind === "recent")
+            && typeof op.name === "string" && op.name.length > 0
+            && typeof op.id === "string" && op.id.length > 0 && Number.isSafeInteger(op.clock)
+            && (op.kind === "favorite" ? typeof op.active === "boolean" : op.active === true);
+    }
+
+    function compareSharedOperations(a, b) {
+        return a.clock !== b.clock ? (a.clock > b.clock ? 1 : -1) : a.id === b.id ? 0 : a.id > b.id ? 1 : -1;
+    }
+
+    function sharedOperationKey(op) {
+        return `${SHARED_OP_PREFIX}${op.kind}:${encodeURIComponent(op.name)}:${encodeURIComponent(op.id)}`;
+    }
+
+    function sharedOperationKeys() {
+        const keys = [];
+        for (let index = 0; index < localStorage.length; index++) {
+            const key = localStorage.key(index);
+            if (key?.startsWith(SHARED_OP_PREFIX)) keys.push(key);
+        }
+        return keys;
+    }
+
+    function mergeSharedOperation(op) {
+        if (!validSharedOperation(op)) return false;
+        sharedClock = Math.max(sharedClock, op.clock);
+        const versions = sharedVersions[op.kind], previous = versions.get(op.name);
+        if (previous && compareSharedOperations(op, previous) <= 0) return false;
+        versions.set(op.name, op);
+        return true;
+    }
+
+    function refreshSharedState() {
+        state.favorites = new Set([...sharedVersions.favorite.values()].filter(op => op.active).map(op => op.name).sort());
+        state.recent = [...sharedVersions.recent.values()].sort((a, b) => compareSharedOperations(b, a)).slice(0, 20).map(op => op.name);
+    }
+
+    function readSharedOperations() {
+        let changed = false;
+        try {
+            for (const key of sharedOperationKeys()) {
+                try {
+                    const op = JSON.parse(localStorage.getItem(key));
+                    if (validSharedOperation(op) && sharedOperationKey(op) === key) changed = mergeSharedOperation(op) || changed;
+                } catch { /* preserve other valid records */ }
+            }
+        } catch (error) { console.warn("Background Prompter: shared state could not be read", error); }
+        refreshSharedState();
+        return changed;
+    }
+
+    function storeSharedOperation(op) {
+        try {
+            const key = sharedOperationKey(op), value = JSON.stringify(op);
+            if (localStorage.getItem(key) !== value) localStorage.setItem(key, value);
+            // The new immutable record is durable before deleting dominated ones.
+            // Concurrent higher versions and removal tombstones are never pruned.
+            for (const previousKey of sharedOperationKeys()) {
+                if (previousKey === key) continue;
+                try {
+                    const previous = JSON.parse(localStorage.getItem(previousKey));
+                    if (validSharedOperation(previous) && sharedOperationKey(previous) === previousKey
+                        && previous.kind === op.kind && previous.name === op.name && compareSharedOperations(previous, op) < 0) {
+                        localStorage.removeItem(previousKey);
+                    }
+                } catch { /* retain unreadable or unremovable records */ }
+            }
+        } catch (error) { console.warn("Background Prompter: shared operation could not be saved", error); }
+    }
+
+    function persistSharedSnapshot() {
+        readSharedOperations();
+        try {
+            // Keep the old array format readable, but ordinary draft/settings
+            // saves must not replace shared state with a tab's stale arrays.
+            localStorage.setItem(SHARED_KEY, JSON.stringify({ favorites: [...state.favorites], recent: state.recent }));
+        } catch (error) { console.warn("Background Prompter: shared snapshot could not be saved", error); }
+    }
+
+    function importLegacyShared(shared) {
+        readSharedOperations();
+        for (const [kind, names] of [["favorite", shared.favorites], ["recent", shared.recent]]) {
+            if (!Array.isArray(names)) continue;
+            names.forEach((name, index) => {
+                if (typeof name !== "string" || !name || sharedVersions[kind].has(name)) return;
+                const op = { kind, name, active: true, clock: kind === "favorite" ? 0 : -index - 1, id: `legacy:${kind}:${name}` };
+                mergeSharedOperation(op);
+                storeSharedOperation(op);
+            });
+        }
+        persistSharedSnapshot();
+    }
+
+    function recordSharedOperation(kind, name, active = true) {
+        readSharedOperations();
+        const op = { kind, name, active, clock: Math.max(Date.now(), sharedClock + 1), id: `${instanceId}:${newId()}` };
+        if (!mergeSharedOperation(op)) return;
+        storeSharedOperation(op);
+        persistSharedSnapshot();
+        broadcast({ type: "shared-operation", operation: op });
+    }
+
+    function receiveSharedOperation(op) {
+        // A queued notification may refer to an operation already superseded
+        // and compacted in storage. Read the durable winners before replaying it.
+        const changed = readSharedOperations(), received = mergeSharedOperation(op);
+        if (received) storeSharedOperation(op);
+        if (!changed && !received) return;
+        if (!sharedLoaded) return;
+        persistSharedSnapshot();
+        persistState();
+        if (state.ready) refreshAll();
+    }
+
     function loadStoredState() {
         try {
             const saved = JSON.parse(localStorage.getItem(STATE_KEY) || localStorage.getItem("k2bg_state_v1") || "{}");
@@ -318,6 +437,7 @@
             state.profile = ["auto", "tags-first", "natural-first"].includes(saved.profile) ? saved.profile : "auto";
             state.styleBoost = ["none", "photo", "anime"].includes(saved.styleBoost) ? saved.styleBoost : "none";
             state.drawerGroup = saved.drawerGroup || "All categories";
+            state.cardSize = clamp(typeof saved.cardSize === "number" ? saved.cardSize : NaN, 148, 228, 176);
             state.drawerCardSize = Number(saved.settingsVersion) >= SETTINGS_VERSION
                 ? clamp(Number(saved.drawerCardSize), DRAWER_CARD_MIN, DRAWER_CARD_MAX, DRAWER_CARD_MIN)
                 : DRAWER_CARD_MIN;
@@ -337,9 +457,11 @@
                 state.generated = saved.generated || "";
                 state.dirty = Boolean(saved.dirty);
             }
+            importLegacyShared(shared);
         } catch (error) {
             console.warn("Background Prompter: saved state could not be read", error);
         }
+        sharedLoaded = true;
     }
 
     function persistState() {
@@ -353,13 +475,13 @@
                 draft: state.draft,
                 dirty: state.dirty,
                 drawerGroup: state.drawerGroup,
+                cardSize: state.cardSize,
                 drawerCardSize: state.drawerCardSize,
                 drawerWidth: state.drawerWidth,
                 favorites: [...state.favorites],
                 recent: state.recent,
                 inserted: state.inserted,
             }));
-            localStorage.setItem(SHARED_KEY, JSON.stringify({ favorites: [...state.favorites], recent: state.recent }));
         } catch (error) {
             console.warn("Background Prompter: state could not be saved", error);
         }
@@ -555,7 +677,7 @@
     }
 
     function addRecent(name) {
-        state.recent = [name, ...state.recent.filter((item) => item !== name)].slice(0, 20);
+        recordSharedOperation("recent", name);
     }
 
     function selectPreset(name, { broadcast = true } = {}) {
@@ -630,11 +752,11 @@
     }
 
     function toggleFavorite(name) {
-        if (state.favorites.has(name)) state.favorites.delete(name);
-        else state.favorites.add(name);
+        // Honor the clicked state even if another tab's notification is delayed.
+        const active = !state.favorites.has(name);
+        recordSharedOperation("favorite", name, active);
         persistState();
         refreshAll();
-        broadcastState();
     }
 
     function filteredPresets({ drawer = false } = {}) {
@@ -1116,7 +1238,7 @@
         if (action === "search") { state.query = event.target.value; state.page = 0; refreshFullApp(); }
         else if (action === "drawer-search") { state.drawerQuery = event.target.value; state.drawerLimit = 40; renderDrawerGrid(); }
         else if (action === "drawer-card-size") { state.drawerCardSize = Number(event.target.value); persistState(); renderDrawerGrid(); }
-        else if (action === "card-size") { state.cardSize = Number(event.target.value); refreshFullApp(); }
+        else if (action === "card-size") { state.cardSize = clamp(Number(event.target.value), 148, 228, 176); persistState(); refreshFullApp(); }
         else if (action === "page-range") goToPage(event.target.value);
         else if (event.target.matches("[data-k2bg-editor]")) updateDraft(event.target.value, event.target);
     }
@@ -1174,7 +1296,11 @@
         const sameSession = Boolean(hostSessionId && message.session === hostSessionId);
         // Favorites/recent are shared within this base path. Editing and model
         // metadata belong only to a host and the pickers it opened.
-        if (message.type === "state") {
+        if (message.type === "shared-operation") {
+            receiveSharedOperation(message.operation);
+        } else if (message.type === "state") {
+            importLegacyShared(message);
+            if (!sharedLoaded) return;
             if (sameSession) {
                 if (state.presets.some((item) => item.name === message.selectedName)) state.selectedName = message.selectedName;
                 state.profile = ["auto", "tags-first", "natural-first"].includes(message.profile) ? message.profile : state.profile;
@@ -1184,8 +1310,6 @@
                 state.dirty = Boolean(message.dirty);
                 lastAutoProfile = resolvedProfile();
             }
-            if (Array.isArray(message.favorites)) state.favorites = new Set(message.favorites);
-            if (Array.isArray(message.recent)) state.recent = message.recent.slice(0, 20);
             persistState();
             if (state.ready) refreshAll();
         } else if (message.type === "draft" && sameSession && message.selectedName === state.selectedName) {
@@ -1331,6 +1455,13 @@
 
     if (channel) channel.addEventListener("message", (event) => handleBroadcast(event.data));
     window.addEventListener("storage", (event) => {
+        if (event.key?.startsWith(SHARED_OP_PREFIX) && event.newValue) {
+            try {
+                const op = JSON.parse(event.newValue);
+                if (validSharedOperation(op) && sharedOperationKey(op) === event.key) receiveSharedOperation(op);
+            } catch { /* preserve other valid records */ }
+            return;
+        }
         if (!channel && event.key === EVENT_KEY && event.newValue) {
             try { handleBroadcast(JSON.parse(event.newValue)); } catch { /* ignore malformed events */ }
         }

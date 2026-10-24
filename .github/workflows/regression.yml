@@ -15,6 +15,53 @@ jobs:
         with:
           node-version: '24'
       - run: node --check javascript/krea2_backgrounds.js
-      - run: node --test tests/regression.test.cjs
+      - run: node --test tests/regression.test.cjs tests/shared-state.test.cjs
       - name: Chromium fixture
         run: CHROME_BIN="$(command -v google-chrome)" node tests/browser.cjs
+  release:
+    needs: regression
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'ukr8b3g-cmyk/Background-Prompter'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    concurrency:
+      group: background-prompter-release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Publish a new tested version without replacing existing releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(tr -d '\r\n' < VERSION)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          tag="v$version"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $tag already exists; preserving it unchanged."
+            exit 0
+          fi
+          current="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)"
+          test "$current" = "$GITHUB_SHA"
+          mkdir -p dist/Background-Prompter
+          git archive HEAD | tar -xf - -C dist/Background-Prompter
+          (cd dist && 7z a -tzip "Background-Prompter-$tag.zip" Background-Prompter >/dev/null)
+          python - "$tag" <<'PY'
+          import hashlib, pathlib, subprocess, sys, zipfile
+          root = pathlib.Path('dist/Background-Prompter')
+          expected = set(subprocess.check_output(['git', 'ls-files'], text=True).splitlines())
+          with zipfile.ZipFile(f'dist/Background-Prompter-{sys.argv[1]}.zip') as archive:
+              names = {n[len('Background-Prompter/'):] for n in archive.namelist() if not n.endswith('/')}
+              assert names == expected, (names - expected, expected - names)
+              for name in sorted(expected):
+                  assert archive.read('Background-Prompter/' + name) == (root / name).read_bytes(), name
+          print(f'ZIP verified: {len(expected)} files match the tested commit.')
+          PY
+          (cd dist && sha256sum "Background-Prompter-$tag.zip" > SHA256SUMS.txt)
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Background Prompter $tag" --notes-file RELEASE_NOTES.md --latest \
+            "dist/Background-Prompter-$tag.zip" dist/SHA256SUMS.txt

@@ -7,6 +7,8 @@
 
 An image-backed background prompt picker for Forge Neo and ReForge. **As of July 2026, it includes 592 background presets with preview images.** Browse visually, generate a model-aware prompt, edit it, and insert it into txt2img or img2img.
 
+**v1.0.0** fixes concurrent favorite changes and saves the normal view's card size. See the [release notes](RELEASE_NOTES.md). After updating, reload the original WebUI and reopen its picker tabs using the same browser profile and WebUI address. Existing browser data is retained.
+
 ## Features
 
 - Browse 592 backgrounds by image, search, category, favorites, or recent use
@@ -87,6 +89,8 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 
 Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026年7月現在、画像付き背景プリセットを592件収録**しています。背景を画像で選び、モデルに合わせたプロンプトを編集してtxt2img / img2imgへ挿入できます。
 
+**v1.0.0**：複数タブのお気に入り競合と、通常画面のカードサイズ保存を修正しました。[更新内容](RELEASE_NOTES.md)。更新後は同じブラウザープロファイルとWebUIアドレスのまま元のWebUIを再読み込みし、pickerを開き直してください。既存のブラウザーデータを引き継ぎます。
+
 ### 主な機能
 
 - 592件を画像、検索、カテゴリ、お気に入り、最近使用から選択
@@ -165,7 +169,7 @@ The dependency-free regression suite runs the shipped JavaScript in isolated VM 
 
 ```sh
 node --check javascript/krea2_backgrounds.js
-node --test tests/regression.test.cjs
+node --test tests/regression.test.cjs tests/shared-state.test.cjs
 ```
 
 For real DOM, storage/BroadcastChannel, multiple tabs, focus/selection, reload, retry, and remount checks, run the isolated Chromium fixture using an existing Chrome/Chromium executable:
