@@ -97,6 +97,7 @@
             inserted: "Inserted into {target}.",
             promptNotFound: "The {target} prompt field was not found.",
             sending: "Sending to {target}...",
+            sendFailed: "Could not send to the original WebUI tab. Try again when the connection is available.",
             noResponse: "The original WebUI tab did not respond.",
             disconnected: "Original WebUI unavailable. Keep it open, then reconnect. If insertion timed out, check its prompt before inserting again.",
             connected: "Connected to the original WebUI.",
@@ -168,6 +169,7 @@
             inserted: "{target}へ挿入しました。",
             promptNotFound: "{target}のプロンプト欄が見つかりません。",
             sending: "{target}へ送信しています...",
+            sendFailed: "元のWebUIタブへ送信できませんでした。通信が戻ってからもう一度お試しください。",
             noResponse: "元のWebUIタブから応答がありません。",
             disconnected: "元のWebUIへ接続できません。元の画面を開いて再接続してください。挿入の応答が途絶えた場合は、再挿入前にプロンプト欄を確認してください。",
             connected: "元のWebUIへ接続しています。",
@@ -1184,7 +1186,11 @@
         }
         const requestId = newId();
         pendingInsertRequestId = requestId;
-        broadcast({ type: "insert-request", recipient: hostInstanceId, requestId, target, text: state.draft, selectedName: state.selectedName, profile: resolvedProfile() });
+        if (!broadcast({ type: "insert-request", recipient: hostInstanceId, requestId, target, text: state.draft, selectedName: state.selectedName, profile: resolvedProfile() })) {
+            pendingInsertRequestId = "";
+            setNotice(t("sendFailed"));
+            return;
+        }
         setNotice(t("sending", { target }));
         window.clearTimeout(insertAckTimer);
         insertAckTimer = window.setTimeout(() => {
@@ -1272,8 +1278,14 @@
 
     function broadcast(message) {
         const payload = { ...message, scope, session: hostSessionId, source: instanceId, timestamp: Date.now() };
-        if (channel) channel.postMessage(payload);
-        else localStorage.setItem(EVENT_KEY, JSON.stringify({ ...payload, nonce: Math.random() }));
+        try {
+            if (channel) channel.postMessage(payload);
+            else localStorage.setItem(EVENT_KEY, JSON.stringify({ ...payload, nonce: Math.random() }));
+            return true;
+        } catch (error) {
+            console.warn("Background Prompter could not send a message", error);
+            return false;
+        }
     }
 
     function broadcastState() {
@@ -1370,7 +1382,12 @@
         connectRequestId = newId();
         // Discovery is explicit after reload; insert requests always address one
         // exact document. A closed host never falls back to the focused tab.
-        broadcast({ type: "connect-request", requestId: connectRequestId, ...(!discover && hostInstanceId ? { recipient: hostInstanceId } : {}) });
+        if (!broadcast({ type: "connect-request", requestId: connectRequestId, ...(!discover && hostInstanceId ? { recipient: hostInstanceId } : {}) })) {
+            connectRequestId = "";
+            setConnectionStatus("disconnected");
+            setNotice(t("sendFailed"));
+            return;
+        }
         connectTimer = window.setTimeout(() => {
             connectRequestId = "";
             if (connectCandidates.size !== 1) {

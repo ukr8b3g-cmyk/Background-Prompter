@@ -3,6 +3,74 @@ const assert = require('node:assert/strict');
 const { world } = require('./harness.cjs');
 
 for (const mode of ['channel', 'storage']) {
+    const writeError = mode === 'channel' ? 'channelWriteError' : 'storageWriteError';
+
+    test(`${mode}: failed insert send clears the wait and can be retried in the same picker`, async () => {
+        const w = world(mode);
+        const host = w.page();
+        await host.load();
+        const picker = await w.picker(host);
+        picker.api.updateDraft('forest', null);
+        w.drain();
+
+        picker[writeError] = true;
+        picker.api.requestInsert('txt2img');
+        assert.equal(picker.api.pendingInsertRequestId, '');
+        assert.match(picker.api.state.notice, /Could not send/);
+        assert.ok(![...picker.timers.values()].some(timer => timer.delay === 1800));
+        assert.equal(w.sent.filter(message => message.type === 'insert-request').length, 0);
+        assert.equal(host.input('txt2img').value, '');
+
+        picker[writeError] = false;
+        picker.api.requestInsert('txt2img');
+        w.drain();
+        assert.equal(host.input('txt2img').value, 'forest');
+        assert.equal(picker.api.pendingInsertRequestId, '');
+        assert.equal(picker.api.state.draft, 'forest');
+    });
+
+    test(`${mode}: failed reconnect send exits connecting and a later reconnect succeeds`, async () => {
+        const w = world(mode);
+        const host = w.page();
+        await host.load();
+        const picker = await w.picker(host);
+
+        picker[writeError] = true;
+        picker.api.reconnectHost({ discover: true });
+        assert.equal(picker.api.connectionStatus, 'disconnected');
+        assert.match(picker.api.state.notice, /Could not send/);
+        assert.ok(![...picker.timers.values()].some(timer => timer.delay === 1800));
+
+        picker[writeError] = false;
+        picker.api.reconnectHost({ discover: true });
+        w.drain();
+        picker.runTimer(1800);
+        assert.equal(picker.api.connectionStatus, 'connected');
+    });
+
+    test(`${mode}: failed ACK send times out without reinserting an accepted request`, async () => {
+        const w = world(mode);
+        const host = w.page();
+        await host.load();
+        const picker = await w.picker(host);
+        picker.api.updateDraft('forest', null);
+        w.drain();
+
+        host[writeError] = true;
+        picker.api.requestInsert('txt2img');
+        w.drain();
+        assert.equal(host.input('txt2img').value, 'forest');
+        assert.ok(picker.api.pendingInsertRequestId);
+
+        host[writeError] = false;
+        picker.runTimer(1800);
+        w.drain();
+        assert.equal(picker.api.pendingInsertRequestId, '');
+        assert.equal(picker.api.connectionStatus, 'disconnected');
+        assert.equal(w.sent.filter(message => message.type === 'insert-request').length, 1);
+        assert.equal(host.input('txt2img').value, 'forest');
+    });
+
     test(`${mode}: picker inserts only into its original host despite focus, for both targets`, async () => {
         const w = world(mode);
         const a = w.page(); const b = w.page({ preset: 'flux' });

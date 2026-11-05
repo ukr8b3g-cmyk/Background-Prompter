@@ -95,6 +95,7 @@ function world(mode = 'channel') {
             constructor(name) { p.channelName = name; }
             addEventListener(_, callback) { p.receive = callback; }
             postMessage(payload) {
+                if (p.channelWriteError) throw new Error('channel write failed');
                 sent.push(payload);
                 for (const other of pages) if (other !== p && other.live && other.channelName === p.channelName) queue.push(() => other.receive({ data: payload }));
             }

@@ -1,3 +1,17 @@
+## v1.0.1
+
+- The standalone picker now clears its waiting state and shows an error if an insert or reconnect message fails to send. Once communication recovers, you can retry from the same picker.
+- If the host already accepted an insertion and its acknowledgment is lost, the picker times out. Check the host prompt before retrying.
+
+After updating, reload the original WebUI and reopen its picker tabs. Use the same browser profile and WebUI address to keep your favorites, recent items, drafts, and settings.
+
+### 日本語
+
+- 別ウィンドウのピッカーで挿入や再接続の送信に失敗した場合、待機状態を解除してエラーを表示します。通信が戻れば同じピッカーから再操作できます。
+- 元のWebUIが挿入を受け付けた後に応答が届かなかった場合は、タイムアウトします。再操作の前に元のプロンプト欄を確認してください。
+
+更新後は、元のWebUIを再読み込みしてピッカーを開き直してください。同じブラウザープロファイルとWebUIアドレスを使うと、お気に入り・最近使用・編集中の文面・設定を引き継げます。
+
 ## v1.0.0
 
 - Fixed lost favorite changes across tabs. Additions and removals now merge per item, including delayed, reordered or duplicated notifications. Recent items use the same merge rules.

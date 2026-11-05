@@ -7,7 +7,7 @@
 
 An image-backed background prompt picker for Forge Neo and ReForge. **As of July 2026, it includes 592 background presets with preview images.** Browse visually, generate a model-aware prompt, edit it, and insert it into txt2img or img2img.
 
-**v1.0.0** fixes concurrent favorite changes and saves the normal view's card size. See the [release notes](RELEASE_NOTES.md). After updating, reload the original WebUI and reopen its picker tabs using the same browser profile and WebUI address. Existing browser data is retained.
+**v1.0.1** lets the standalone picker recover when an insert or reconnect message fails to send. See the [release notes](RELEASE_NOTES.md). After updating, reload the original WebUI and reopen its picker tabs using the same browser profile and WebUI address to retain browser data.
 
 ## Features
 
@@ -89,7 +89,7 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 
 Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026年7月現在、画像付き背景プリセットを592件収録**しています。背景を画像で選び、モデルに合わせたプロンプトを編集してtxt2img / img2imgへ挿入できます。
 
-**v1.0.0**：複数タブのお気に入り競合と、通常画面のカードサイズ保存を修正しました。[更新内容](RELEASE_NOTES.md)。更新後は同じブラウザープロファイルとWebUIアドレスのまま元のWebUIを再読み込みし、pickerを開き直してください。既存のブラウザーデータを引き継ぎます。
+**v1.0.1** では、別ウィンドウのピッカーで挿入や再接続の送信に失敗しても、通信の復旧後に再操作できます。[更新内容](RELEASE_NOTES.md)。ブラウザー内のデータを引き継ぐには、更新後も同じプロファイルとWebUIアドレスを使い、元のWebUIを再読み込みしてピッカーを開き直してください。
 
 ### 主な機能
 
