@@ -14,7 +14,7 @@ const instrumented = source.replace(/\}\)\(\);\s*$/, `globalThis.__test = {
     state, instanceId, hostSessionId, scope, initialize, handleBroadcast,
     broadcastState, updateDraft, requestInsert, insertIntoPrompt, openStandalone,
     reconnectHost, resolvedProfile, setGeneratedDraft, persistState,
-    toggleFavorite, addRecent, handleInput, loadStoredState,
+    toggleFavorite, addRecent, handleInput, loadStoredState, setEnabled, changeStyleBoost, setStyleBoostEnabled, buildPrompt,
     get connectionStatus() { return connectionStatus; },
     get pendingInsertRequestId() { return pendingInsertRequestId; }
 }; })();`);
@@ -27,6 +27,7 @@ function world(mode = 'channel') {
     const sent = [];
     let sequence = 0;
     function page({ url = 'http://fixture.test/neo/', preset = 'xl', checkpoint = 'sdxl', session = new Map(), fail = 0 } = {}) {
+        const loadCallbacks = [];
         const listeners = new Map();
         const timers = new Map();
         const elements = new Map();
@@ -50,6 +51,8 @@ function world(mode = 'channel') {
             getElementById: id => elements.get(id) || null,
             querySelectorAll: () => [],
             querySelector(selector) {
+                const prompt = /^#(txt2img|img2img)_prompt textarea$/.exec(selector);
+                if (prompt) return elements.get(prompt[1] + '_prompt').querySelector();
                 if (selector.includes('forge_ui_preset')) return { value: controls.preset };
                 if (selector.includes('sd_model_checkpoint')) return { value: controls.checkpoint };
                 return null;
@@ -107,7 +110,7 @@ function world(mode = 'channel') {
             crypto: { randomUUID: () => `id-${++sequence}` }, BroadcastChannel,
             console: { warn() {}, error() {} },
             Event: class { constructor(type) { this.type = type; } },
-            onUiLoaded: callback => { p.load = callback; },
+            onUiLoaded: callback => { loadCallbacks.push(callback); },
             onAfterUiUpdate: callback => { p.after = callback; },
             fetch: async () => {
                 p.fetches++;
@@ -123,6 +126,9 @@ function world(mode = 'channel') {
         p.close = () => { p.emit('pagehide'); p.live = false; };
         p.run = () => vm.runInContext(instrumented, context);
         p.run();
+        p.load = async () => {
+            for (const callback of loadCallbacks) await callback();
+        };
         p.api = context.__test;
         p.context = context;
         return p;

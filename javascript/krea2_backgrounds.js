@@ -39,11 +39,14 @@
     let hostInstanceId = isStandalone ? link.get("page") || "" : instanceId;
     const channel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL_NAME) : null;
     const sharedVersions = { favorite: new Map(), recent: new Map() };
+    const navigationRoots = new WeakSet();
     let sharedClock = 0;
     let sharedLoaded = false;
 
     const STRINGS = {
         en: {
+            enable: "Enable",
+            disabled: "Insertion is disabled by Enable on the original WebUI bar. The selected background and draft are kept.",
             appSubtitle: "592 background presets · July 2026",
             standalone: "Open in browser tab",
             search: "Search",
@@ -60,6 +63,7 @@
             tagsFirst: "Tags first",
             naturalFirst: "Natural language first",
             styleBoost: "Style Boost",
+            enableStyleBoost: "Enable Style Boost",
             photo: "Photo",
             anime: "Anime",
             selectedBackground: "Selected Background",
@@ -116,6 +120,8 @@
             groupFantasy: "Fantasy & Sci-Fi",
         },
         ja: {
+            enable: "有効",
+            disabled: "元のWebUIの外側バーで有効がOFFになっています。選択中の背景と編集内容は保持しています。",
             appSubtitle: "背景プリセット592件・2026年7月現在",
             standalone: "別ブラウザータブで開く",
             search: "検索",
@@ -132,6 +138,7 @@
             tagsFirst: "タグ優先",
             naturalFirst: "自然文優先",
             styleBoost: "スタイルブースト",
+            enableStyleBoost: "スタイルブーストを有効",
             photo: "写真",
             anime: "アニメ",
             selectedBackground: "選択中の背景",
@@ -210,11 +217,14 @@
 
     const state = {
         ready: false,
+        enabled: true,
+        enabledRevision: { counter:0, actor:'legacy' },
         presets: [],
         totalAvailable: 592,
         selectedName: "",
         profile: "auto",
         styleBoost: "none",
+        styleBoostLast: "photo",
         uiPreset: "",
         checkpoint: "",
         generated: "",
@@ -229,7 +239,7 @@
         drawerOpen: false,
         drawerQuery: "",
         drawerGroup: "All categories",
-        drawerView: "recent",
+        drawerView: "all",
         drawerCardSize: DRAWER_CARD_MIN,
         drawerLimit: 40,
         drawerWidth: 560,
@@ -431,13 +441,31 @@
         if (state.ready) refreshAll();
     }
 
+    function validEnabledRevision(value) { return value && Number.isSafeInteger(value.counter) && value.counter>=0 && typeof value.actor==='string' && value.actor.length>0 && value.actor.length<=200; }
+    function compareEnabledRevision(a,b) { return a.counter-b.counter || (a.actor<b.actor?-1:a.actor>b.actor?1:0); }
+    function mergeEnabled(value, revision) {
+        if(typeof value!=='boolean')return false;
+        if(validEnabledRevision(revision)){
+            const order=compareEnabledRevision(revision,state.enabledRevision);
+            if(order<0 || (order===0 && revision.counter>0))return false;
+            state.enabledRevision={...revision};
+        }else if(state.enabledRevision.counter>0)return false;
+        state.enabled=value;return true;
+    }
+    function mergeStoredEnabled() {
+        try{const saved=JSON.parse(localStorage.getItem(STATE_KEY)||'null');if(validEnabledRevision(saved?.enabledRevision)&&compareEnabledRevision(saved.enabledRevision,state.enabledRevision)>0)mergeEnabled(saved.enabled,saved.enabledRevision);}catch{/* Ordinary persistence reports unavailable storage. */}
+    }
+
     function loadStoredState() {
         try {
             const saved = JSON.parse(localStorage.getItem(STATE_KEY) || localStorage.getItem("k2bg_state_v1") || "{}");
             const shared = JSON.parse(localStorage.getItem(SHARED_KEY) || "null") || saved;
+            state.enabled = saved.enabled === undefined ? true : saved.enabled === true;
+            state.enabledRevision=validEnabledRevision(saved.enabledRevision)?{...saved.enabledRevision}:{counter:0,actor:'legacy'};
             state.selectedName = saved.selectedName || "";
             state.profile = ["auto", "tags-first", "natural-first"].includes(saved.profile) ? saved.profile : "auto";
             state.styleBoost = ["none", "photo", "anime"].includes(saved.styleBoost) ? saved.styleBoost : "none";
+            state.styleBoostLast = state.styleBoost !== 'none' ? state.styleBoost : ['photo','anime'].includes(saved.styleBoostLast) ? saved.styleBoostLast : 'photo';
             state.drawerGroup = saved.drawerGroup || "All categories";
             state.cardSize = clamp(typeof saved.cardSize === "number" ? saved.cardSize : NaN, 148, 228, 176);
             state.drawerCardSize = Number(saved.settingsVersion) >= SETTINGS_VERSION
@@ -468,11 +496,15 @@
 
     function persistState() {
         try {
+            mergeStoredEnabled();
             localStorage.setItem(STATE_KEY, JSON.stringify({
                 settingsVersion: SETTINGS_VERSION,
+                enabled: state.enabled,
+                enabledRevision: state.enabledRevision,
                 selectedName: state.selectedName,
                 profile: state.profile,
                 styleBoost: state.styleBoost,
+                styleBoostLast: state.styleBoostLast,
                 generated: state.generated,
                 draft: state.draft,
                 dirty: state.dirty,
@@ -715,10 +747,16 @@
             return;
         }
         state.styleBoost = state.styleBoost === value ? "none" : value;
+        if(state.styleBoost!=='none')state.styleBoostLast=state.styleBoost;
         setGeneratedDraft();
         persistState();
         refreshAll();
         broadcastState();
+    }
+
+    function setStyleBoostEnabled(enabled) {
+        if((state.styleBoost!=='none')===(enabled===true)){refreshStyleBoostControls();return;}
+        changeStyleBoost(enabled ? state.styleBoostLast : state.styleBoost);
     }
 
     function updateDraft(value, source) {
@@ -805,13 +843,15 @@
     function styleBoostMarkup(extraClass = "") {
         return `
             <div class="k2bg-style-boost${extraClass ? ` ${extraClass}` : ""}" role="group" aria-label="${t("styleBoost")}">
-                <span>${t("styleBoost")}</span>
+                <label class="k2bg-boost-enable"><input type="checkbox" data-k2bg-action="boost-enabled"${state.styleBoost!=='none'?' checked':''}><span>${t('enableStyleBoost')}</span></label>
                 <button type="button" data-k2bg-action="style-boost" data-value="photo" aria-pressed="${state.styleBoost === "photo"}">${t("photo")}</button>
                 <button type="button" data-k2bg-action="style-boost" data-value="anime" aria-pressed="${state.styleBoost === "anime"}">${t("anime")}</button>
             </div>`;
     }
 
     function refreshStyleBoostControls() {
+        syncEnableControls();
+        queryAll('[data-k2bg-action="boost-enabled"]').forEach(input=>{input.checked=state.styleBoost!=='none';});
         queryAll('[data-k2bg-action="style-boost"]').forEach((button) => {
             const active = button.dataset.value === state.styleBoost;
             button.classList.toggle("is-active", active);
@@ -828,6 +868,29 @@
             <button type="button" class="k2bg-secondary" data-k2bg-action="copy">${t("copy")}</button>
             <button type="button" class="k2bg-secondary" data-k2bg-action="reset">${t("reset")}</button>
             ${isStandalone ? `<button type="button" class="k2bg-secondary" data-k2bg-action="reconnect">${t("reconnect")}</button>` : ""}`;
+    }
+
+    function enableMarkup() {
+        return `<label class="k2bg-enable"><input type="checkbox" data-k2bg-action="enabled"${state.enabled ? " checked" : ""}><span>${t('enable')}</span></label>`;
+    }
+
+    function syncEnableControls() {
+        queryAll('[data-k2bg-action="enabled"]').forEach(input => { input.checked = state.enabled; });
+        queryAll('[data-k2bg-action="insert"]').forEach(button => {
+            button.disabled = !state.enabled;
+            button.title = state.enabled ? "" : t("disabled");
+        });
+    }
+
+    function setEnabled(value) {
+        mergeStoredEnabled();
+        state.enabled = value === true;
+        state.enabledRevision={counter:Math.max(Date.now(),state.enabledRevision.counter+1),actor:instanceId};
+        persistState();
+        syncEnableControls();
+        // Only an explicit toggle changes Enable. A delayed preset/draft
+        // snapshot must not undo a newer OFF action in the original WebUI.
+        broadcast({ type: "enabled", enabled: state.enabled, enabledRevision:state.enabledRevision });
     }
 
     function editorMarkup({ compact = false } = {}) {
@@ -856,6 +919,11 @@
     }
 
     function mountFullApp() {
+        const navigationRoot=appRoot();
+        if(typeof navigationRoot.addEventListener==='function' && !navigationRoots.has(navigationRoot)){
+            navigationRoots.add(navigationRoot);
+            navigationRoot.addEventListener('click',event=>{const tab=event.target.closest?.('#tabs > .tab-nav button');if(tab?.textContent.trim()===APP_TITLE)resetFullFilter();},true);
+        }
         const mount = appRoot().getElementById(APP_ID) || document.getElementById(APP_ID);
         if (!mount || mount.dataset.ready === "true") return;
         mount.dataset.ready = "true";
@@ -865,7 +933,7 @@
                 <header class="k2bg-titlebar">
                     <div class="k2bg-titlecopy"><h1>${APP_TITLE}</h1><span>${t("appSubtitle")}</span></div>
                     <div class="k2bg-titlebar-controls">
-                        ${styleBoostMarkup()}
+                        <div class="k2bg-scope-controls">${styleBoostMarkup()}</div>
                         <div class="k2bg-top-actions k2bg-titlebar-actions">
                             ${editorActionMarkup()}
                             <button type="button" class="k2bg-secondary" data-k2bg-action="standalone">${t("standalone")}</button>
@@ -877,10 +945,10 @@
                     <label class="k2bg-field k2bg-category"><span>${t("category")}</span><select data-k2bg-action="group" aria-label="Background category"></select></label>
                     <div class="k2bg-segments" aria-label="Background filter">
                         <button type="button" data-k2bg-action="view" data-view="all">${t("all")}</button>
-                        <button type="button" data-k2bg-action="view" data-view="favorites">${t("favorites")}</button>
                         <button type="button" data-k2bg-action="view" data-view="recent">${t("recent")}</button>
+                        <button type="button" data-k2bg-action="view" data-view="favorites">${t("favorites")}</button>
                     </div>
-                    <label class="k2bg-size"><span>${t("cardSize")}</span><input type="range" min="148" max="228" step="8" value="${state.cardSize}" data-k2bg-action="card-size"></label>
+                    <label class="k2bg-size"><span>${t("cardSize")}</span><input type="range" min="148" max="228" step="4" value="${state.cardSize}" data-k2bg-action="card-size"></label>
                     <span class="k2bg-count" data-k2bg-count></span>
                 </div>
                 <div class="k2bg-layout">
@@ -889,6 +957,7 @@
                 </div>
             </section>`;
 
+        arrangeLibraryToolbar(mount.querySelector('.k2bg-toolbar'));
         const category = mount.querySelector('[data-k2bg-action="group"]');
         category.innerHTML = groups().map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(groupLabel(item))}</option>`).join("");
         category.value = state.group;
@@ -940,9 +1009,11 @@
             <img src="${thumbUrl(preset)}" alt="">
             <span class="k2bg-bar-copy"><strong>${escapeHtml(preset.name)}</strong><small>${inserted ? t("lastInserted") : t("notInserted")}</small></span>
             <span class="k2bg-bar-spacer"></span>
+            <span class="k2bg-bar-actions">
+            ${enableMarkup()}
             <button type="button" class="k2bg-primary" data-k2bg-action="full">${t("openPrompter")}</button>
             <button type="button" class="k2bg-primary" data-k2bg-action="standalone">${t("openTab")}</button>
-            <button type="button" class="k2bg-primary" data-k2bg-action="drawer" data-target="${target}">${t("chooseDrawer")}</button>`;
+            <button type="button" class="k2bg-primary" data-k2bg-action="drawer" data-target="${target}">${t("chooseDrawer")}</button></span>`;
     }
 
     function ensureCompactBars() {
@@ -957,6 +1028,7 @@
                 bar.id = `k2bg-${target}-bar`;
                 bar.className = "k2bg-compact-bar";
                 bar.addEventListener("click", handleAction);
+                bar.addEventListener("change", handleChange);
                 container.appendChild(bar);
             }
             const renderKey = `${uiLanguage}|${state.selectedName}|${state.inserted[target]?.name === state.selectedName && state.inserted[target]?.text === state.draft}`;
@@ -984,6 +1056,10 @@
 
     function openDrawer(target, opener) {
         state.target = target;
+        state.drawerView = 'all';
+        state.drawerLimit = 40;
+        state.drawerQuery = '';
+        state.drawerGroup = 'All categories';
         state.drawerOpen = true;
         activeDrawerOpener = opener || document.activeElement;
         renderDrawer();
@@ -1020,6 +1096,8 @@
         const grid = host.querySelector("[data-k2bg-drawer-grid]");
         if (!grid) return;
         const filtered = filteredPresets({ drawer: true });
+        const count=host.querySelector('[data-k2bg-library-count]');
+        if(count) count.textContent=`${filtered.length} / ${state.totalAvailable}`;
         const visible = filtered.slice(0, state.drawerLimit);
         grid.style.setProperty("--k2bg-drawer-card-min", `${state.drawerCardSize}px`);
         grid.innerHTML = visible.length
@@ -1071,16 +1149,16 @@
                 <div class="k2bg-drawer-resizer" role="separator" aria-orientation="vertical" aria-label="${t("resizeDrawer")}" tabindex="0"></div>
                 <div class="k2bg-drawer-top">
                     <header><div><span>${t("quickBackgrounds")}</span><h2 id="k2bg-drawer-title">${state.target}</h2></div><button type="button" class="k2bg-secondary" data-k2bg-action="close">${t("close")}</button></header>
-                    ${styleBoostMarkup("k2bg-drawer-style-boost")}
+                    <div class="k2bg-scope-controls">${styleBoostMarkup("k2bg-drawer-style-boost")}</div>
                     <div class="k2bg-top-actions k2bg-drawer-actions">${editorActionMarkup({ compact: true })}</div>
                 </div>
                 <div class="k2bg-drawer-toolbar">
                     <label class="k2bg-search"><span>${t("search")}</span><input type="search" data-k2bg-action="drawer-search" value="${escapeHtml(state.drawerQuery)}" placeholder="${t("drawerSearchPlaceholder")}" autocomplete="off"></label>
                     <label class="k2bg-field"><span>${t("category")}</span><select data-k2bg-action="drawer-group" aria-label="${t("drawerCategory")}">${groups().map((item) => `<option value="${escapeHtml(item)}"${item === state.drawerGroup ? " selected" : ""}>${escapeHtml(groupLabel(item))}</option>`).join("")}</select></label>
                     <div class="k2bg-segments">
+                        <button type="button" data-k2bg-action="drawer-view" data-view="all">${t("all")}</button>
                         <button type="button" data-k2bg-action="drawer-view" data-view="recent">${t("recent")}</button>
                         <button type="button" data-k2bg-action="drawer-view" data-view="favorites">${t("favorites")}</button>
-                        <button type="button" data-k2bg-action="drawer-view" data-view="all">${t("all")}</button>
                     </div>
                     <label class="k2bg-size"><span>${t("thumbnailSize")}</span><input type="range" min="${DRAWER_CARD_MIN}" max="${DRAWER_CARD_MAX}" step="10" value="${state.drawerCardSize}" data-k2bg-action="drawer-card-size"></label>
                 </div>
@@ -1088,10 +1166,19 @@
                 <div class="k2bg-drawer-editor" data-k2bg-drawer-editor></div>
                 <footer><button type="button" class="k2bg-secondary" data-k2bg-action="full">${t("openPrompter")}</button><button type="button" class="k2bg-secondary" data-k2bg-action="standalone">${t("openTab")}</button></footer>
             </section>`;
+        arrangeLibraryToolbar(host.querySelector('.k2bg-drawer-toolbar'),true);
         initDrawerResize(host.querySelector(".k2bg-drawer"));
         renderDrawerGrid();
         renderDrawerEditor();
         refreshStyleBoostControls();
+    }
+
+    function arrangeLibraryToolbar(toolbar, drawer=false) {
+        if(!toolbar || toolbar.querySelector('.k2bg-library-size-row')) return;
+        const row=document.createElement('div'); row.className='k2bg-library-size-row';
+        let count=toolbar.querySelector('[data-k2bg-count]');
+        if(drawer) { count=document.createElement('span'); count.className='k2bg-count'; count.setAttribute('data-k2bg-library-count',''); }
+        row.append(toolbar.querySelector('.k2bg-size'),count); toolbar.append(row);
     }
 
     function refreshAll() {
@@ -1114,6 +1201,15 @@
             replacement?.focus({ preventScroll: true });
             if (selection) replacement?.setSelectionRange(...selection);
         }
+    }
+
+    function resetFullFilter() {
+        if(state.view==='all' && state.page===0 && !state.query && state.group==='All categories') return;
+        state.view='all'; state.page=0; state.query=''; state.group='All categories';
+        const mount=appRoot().getElementById(APP_ID) || document.getElementById(APP_ID);
+        const search=mount?.querySelector('[data-k2bg-action="search"]'),category=mount?.querySelector('[data-k2bg-action="group"]');
+        if(search)search.value='';if(category)category.value='All categories';
+        refreshFullApp();
     }
 
     function activateBackgroundTab() {
@@ -1139,38 +1235,94 @@
         window.open(url.href, "_blank", "noopener");
     }
 
-    function insertIntoPrompt(target, text, { profile = resolvedProfile(), selectedName = state.selectedName } = {}) {
-        if (!["txt2img", "img2img"].includes(target) || typeof text !== "string") return false;
-        const textarea = appRoot().getElementById(`${target}_prompt`)?.querySelector("textarea");
-        if (!textarea || !text.trim()) return false;
-        const start = Number.isInteger(textarea.selectionStart) ? textarea.selectionStart : textarea.value.length;
-        const end = Number.isInteger(textarea.selectionEnd) ? textarea.selectionEnd : start;
-        const before = textarea.value.slice(0, start);
-        const after = textarea.value.slice(end);
+    // Compose only the outgoing Positive argument. Both native and queued Generate use it.
+    function installGenerationPrompt() {
+        if (isStandalone) return;
+
+        function wrapSubmit(owner, name, target, index) {
+            const submit = owner?.[name];
+            if (typeof submit !== "function") return;
+            owner[name] = function (...args) {
+                const input = appRoot().querySelector("#" + target + "_prompt textarea");
+                // Gallery upscale also calls submit(), with a different argument layout.
+                const selection = typeof args[index] === "string" && args[index] === input?.value
+                    ? selectedGenerationPrompt() : null;
+                const result = submit.apply(this, args);
+                if (!selection) return result;
+                const apply = values => {
+                    if (Array.isArray(values) && typeof values[index] === "string") {
+                        values[index] = appendSelectedPrompt(values[index], selection);
+                    }
+                    return values;
+                };
+                return typeof result?.then === "function" ? result.then(apply) : apply(result);
+            };
+        }
+
+        wrapSubmit(window, "submit", "txt2img", 1);
+        wrapSubmit(window, "submit_img2img", "img2img", 2);
+        wrapSubmit(window.forgeGenerationQueue, "submit", "txt2img", 1);
+    }
+
+    function containsPromptSegment(prompt, text) {
+        const segments = value => value.split(/[,\r\n]+/).map(part => part.trim()).filter(Boolean);
+        const selected = segments(text).join("\n");
+        return Boolean(selected) && ("\n" + segments(prompt).join("\n") + "\n").includes("\n" + selected + "\n");
+    }
+
+    function selectedGenerationPrompt() {
+        if (!state.ready || state.enabled !== true || !state.draft.trim()) return null;
+        return { text: state.draft, profile: resolvedProfile() };
+    }
+
+    function appendSelectedPrompt(prompt, { text, profile }) {
+        if (containsPromptSegment(prompt, text)) return prompt;
+        const result = splicePrompt(prompt, prompt.length, prompt.length, text, profile);
+        return result ? prompt + result.text : prompt;
+    }
+
+    function splicePrompt(value, start, end, text, profile) {
+        const before = value.slice(0, start);
+        const after = value.slice(end);
         const separator = profile === "tags-first" ? ", " : "\n";
         let content = text.trim();
         // Keep existing prompt separators; remove only duplicated edge commas
         // from the inserted text, never from the surrounding user prompt.
         if (/,\s*$/.test(before)) content = content.replace(/^,+\s*/, "");
         if (/^\s*,/.test(after)) content = content.replace(/\s*,+$/, "");
-        if (!content) return false;
+        if (!content) return null;
         const left = before && !/[\s,]$/.test(before) && !/^[\s,]/.test(content) ? separator
             : /,$/.test(before) && !/^[\s,]/.test(content) ? " " : "";
         const right = after && !/^[\s,]/.test(after) && !/[\s,]$/.test(content) ? separator
             : /,$/.test(content) && after && !/^\s/.test(after) ? " " : "";
-        textarea.setRangeText(`${left}${content}${right}`, start, end, "end");
-        const caret = start + left.length + content.length;
-        textarea.setSelectionRange(caret, caret);
+        return { text: left + content + right, content, caret: start + left.length + content.length };
+    }
+
+    function insertIntoPrompt(target, text, { profile = resolvedProfile(), selectedName = state.selectedName } = {}) {
+        if (state.enabled !== true) return false;
+        if (!["txt2img", "img2img"].includes(target) || typeof text !== "string") return false;
+        const textarea = appRoot().getElementById(`${target}_prompt`)?.querySelector("textarea");
+        if (!textarea || !text.trim()) return false;
+        const start = Number.isInteger(textarea.selectionStart) ? textarea.selectionStart : textarea.value.length;
+        const end = Number.isInteger(textarea.selectionEnd) ? textarea.selectionEnd : start;
+        const result = splicePrompt(textarea.value, start, end, text, profile);
+        if (!result) return false;
+        textarea.setRangeText(result.text, start, end, "end");
+        textarea.setSelectionRange(result.caret, result.caret);
         if (typeof updateInput === "function") updateInput(textarea);
         else textarea.dispatchEvent(new Event("input", { bubbles: true }));
         textarea.focus();
-        state.inserted[target] = { name: selectedName, text: content };
+        state.inserted[target] = { name: selectedName, text: result.content };
         persistState();
         ensureCompactBars();
         return true;
     }
 
     function requestInsert(target) {
+        if (state.enabled !== true) {
+            setNotice(t("disabled"));
+            return;
+        }
         if (!state.draft.trim()) {
             setNotice(t("emptyPrompt"));
             return;
@@ -1229,7 +1381,7 @@
         else if (action === "drawer-more") { state.drawerLimit += 40; renderDrawerGrid(); }
         else if (action === "drawer") openDrawer(button.dataset.target, button);
         else if (action === "close") closeDrawer();
-        else if (action === "full") { closeDrawer(); activateBackgroundTab(); }
+        else if (action === "full") { resetFullFilter(); closeDrawer(); activateBackgroundTab(); }
         else if (action === "standalone") openStandalone();
         else if (action === "reconnect") reconnectHost({ discover: true });
         else if (action === "insert") requestInsert(button.dataset.target || state.target);
@@ -1262,7 +1414,9 @@
 
     function handleChange(event) {
         const action = event.target.dataset.k2bgAction;
-        if (action === "group") { state.group = event.target.value; state.page = 0; refreshFullApp(); }
+        if (action === "enabled") setEnabled(event.target.checked);
+        else if (action === 'boost-enabled') setStyleBoostEnabled(event.target.checked);
+        else if (action === "group") { state.group = event.target.value; state.page = 0; refreshFullApp(); }
         else if (action === "drawer-group") { state.drawerGroup = event.target.value; state.drawerLimit = 40; persistState(); renderDrawerGrid(); }
         else if (action === "page-number") goToPage(event.target.value);
         else if (action === "profile") changeProfile(event.target.value);
@@ -1294,6 +1448,7 @@
             selectedName: state.selectedName,
             profile: state.profile,
             styleBoost: state.styleBoost,
+            styleBoostLast: state.styleBoostLast,
             generated: state.generated,
             draft: state.draft,
             dirty: state.dirty,
@@ -1310,6 +1465,10 @@
         // metadata belong only to a host and the pickers it opened.
         if (message.type === "shared-operation") {
             receiveSharedOperation(message.operation);
+        } else if (message.type === "enabled" && sameSession && typeof message.enabled === "boolean") {
+            if(!mergeEnabled(message.enabled,message.enabledRevision))return;
+            persistState();
+            syncEnableControls();
         } else if (message.type === "state") {
             importLegacyShared(message);
             if (!sharedLoaded) return;
@@ -1317,6 +1476,7 @@
                 if (state.presets.some((item) => item.name === message.selectedName)) state.selectedName = message.selectedName;
                 state.profile = ["auto", "tags-first", "natural-first"].includes(message.profile) ? message.profile : state.profile;
                 state.styleBoost = ["none", "photo", "anime"].includes(message.styleBoost) ? message.styleBoost : state.styleBoost;
+                state.styleBoostLast=state.styleBoost!=='none'?state.styleBoost:['photo','anime'].includes(message.styleBoostLast)?message.styleBoostLast:state.styleBoostLast;
                 state.generated = typeof message.generated === "string" ? message.generated : buildPrompt(selectedPreset());
                 state.draft = typeof message.draft === "string" ? message.draft : state.generated;
                 state.dirty = Boolean(message.dirty);
@@ -1333,7 +1493,7 @@
             updateDirtyIndicators();
             ensureCompactBars();
         } else if (message.type === "connect-request" && sameSession && !isStandalone && state.ready) {
-            broadcast({ type: "host-ready", recipient: message.source, requestId: message.requestId, uiPreset: state.uiPreset, checkpoint: state.checkpoint });
+            broadcast({ type: "host-ready", recipient: message.source, requestId: message.requestId, uiPreset: state.uiPreset, checkpoint: state.checkpoint, enabled: state.enabled, enabledRevision:state.enabledRevision });
         } else if (message.type === "host-ready" && sameSession && isStandalone && message.requestId === connectRequestId) {
             connectCandidates.set(message.source, message);
         } else if (message.type === "host-metadata" && sameSession && isStandalone && message.source === hostInstanceId) {
@@ -1342,17 +1502,17 @@
             setConnectionStatus("disconnected");
         } else if (message.type === "insert-request" && sameSession && !isStandalone && state.ready && message.recipient === instanceId && typeof message.requestId === "string") {
             const key = `${message.source}:${message.requestId}`;
-            let ok = insertResults.get(key);
+            let result = insertResults.get(key);
             if (!insertResults.has(key)) {
-                ok = insertIntoPrompt(message.target, message.text, { profile: message.profile, selectedName: message.selectedName });
-                insertResults.set(key, ok);
+                result = { ok: insertIntoPrompt(message.target, message.text, { profile: message.profile, selectedName: message.selectedName }), reason: state.enabled ? "" : "disabled" };
+                insertResults.set(key, result);
                 if (insertResults.size > 100) insertResults.delete(insertResults.keys().next().value);
             }
-            broadcast({ type: "insert-ack", recipient: message.source, requestId: message.requestId, ok, target: message.target });
+            broadcast({ type: "insert-ack", recipient: message.source, requestId: message.requestId, ...result, target: message.target });
         } else if (message.type === "insert-ack" && sameSession && isStandalone && message.source === hostInstanceId && message.recipient === instanceId && message.requestId === pendingInsertRequestId) {
             window.clearTimeout(insertAckTimer);
             pendingInsertRequestId = "";
-            setNotice(message.ok ? t("inserted", { target: message.target }) : t("promptNotFound", { target: message.target }));
+            setNotice(message.ok ? t("inserted", { target: message.target }) : message.reason === "disabled" ? t("disabled") : t("promptNotFound", { target: message.target }));
         }
     }
 
@@ -1362,6 +1522,7 @@
     }
 
     function applyHostMetadata(message) {
+        if (typeof message.enabled === "boolean") mergeEnabled(message.enabled,message.enabledRevision);
         state.uiPreset = typeof message.uiPreset === "string" ? message.uiPreset : "";
         state.checkpoint = typeof message.checkpoint === "string" ? message.checkpoint : "";
         if (state.profile === "auto" && !state.dirty) setGeneratedDraft();
@@ -1370,7 +1531,7 @@
     }
 
     function broadcastHostMetadata() {
-        broadcast({ type: "host-metadata", uiPreset: state.uiPreset, checkpoint: state.checkpoint });
+        broadcast({ type: "host-metadata", uiPreset: state.uiPreset, checkpoint: state.checkpoint, enabled: state.enabled, enabledRevision:state.enabledRevision });
     }
 
     function reconnectHost({ discover = false } = {}) {
@@ -1487,6 +1648,7 @@
         if (!isStandalone && !event.persisted) broadcast({ type: "host-closed" });
     });
 
+    onUiLoaded(installGenerationPrompt);
     onUiLoaded(initialize);
     onAfterUiUpdate(() => {
         if (!state.ready) {

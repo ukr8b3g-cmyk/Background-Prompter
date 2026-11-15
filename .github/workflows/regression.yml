@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: '24'
       - run: node --check javascript/krea2_backgrounds.js
-      - run: node --test tests/regression.test.cjs tests/shared-state.test.cjs
+      - run: node --test tests/*.test.cjs
       - name: Chromium fixture
         run: CHROME_BIN="$(command -v google-chrome)" node tests/browser.cjs
   release:

@@ -7,7 +7,7 @@
 
 An image-backed background prompt picker for Forge Neo and ReForge. **As of July 2026, it includes 592 background presets with preview images.** Browse visually, generate a model-aware prompt, edit it, and insert it into txt2img or img2img.
 
-**v1.0.1** lets the standalone picker recover when an insert or reconnect message fails to send. See the [release notes](RELEASE_NOTES.md). After updating, reload the original WebUI and reopen its picker tabs using the same browser profile and WebUI address to retain browser data.
+**v1.1.0** adds an **Enable** switch to the Background bar. In Forge Neo, it applies the selected background when you generate. See the [release notes](RELEASE_NOTES.md). After updating, reload the original WebUI and reopen its picker tabs using the same browser profile and WebUI address to retain browser data.
 
 ## Features
 
@@ -25,7 +25,7 @@ An image-backed background prompt picker for Forge Neo and ReForge. **As of July
 1. Open the **Background Prompter** tab or select **Choose in side panel** under txt2img or img2img.
 2. Search for and select a background.
 3. Adjust the output format, optionally select **Photo** or **Anime** under **Style Boost**, or edit the generated prompt.
-4. Select **Insert into txt2img** or **Insert into img2img**.
+4. With the outer **Enable** on, Forge Neo includes the selected background in the submitted positive prompt on Generate while keeping the prompt field unchanged. Use **Insert** to keep an editable background in the field. You can combine it with the current selection, and Generate skips identical text already in the field.
 
 Buttons are displayed in Japanese when a supported Japanese WebUI localization is active.
 
@@ -42,6 +42,8 @@ You can manually select **Tags first** or **Natural language first**. Underscore
 **Tags first** usually uses five to eight compact Danbooru-style scene and object tags. Repeated scene names, generic foreground-object instructions, and optional time or lighting modifiers are omitted; time that defines the scene (such as a night street) and physical light sources remain. Short natural-language support is added only when spatial relationships are difficult to express as tags. **Natural language first** keeps the fuller scene description and adds only supplemental tags not already covered by it.
 
 Base prompts do not force a realistic or anime style and do not include person, readable-text, or logo exclusions. **Style Boost** is off by default; Photo and Anime are mutually exclusive and append a short style phrase to the editable output.
+
+The outer **Enable** controls application on Generate and the Insert action. Turning it off keeps text already inserted. The regular tab, side panel and linked picker contain only **Enable Style Boost**, which controls the optional style phrase. Turning Boost off leaves the base background insertable when the extension is enabled. The two states are independent. Boost remembers its last Photo/Anime choice, and re-enabling the extension does not enable Boost.
 
 ## Display language
 
@@ -71,6 +73,7 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 ## Notes
 
 - Supported WebUIs: Forge Neo and ReForge
+- Opening the regular tab or side panel, or opening/reloading a browser picker, clears Search and selects All categories and All so browsing starts with every background. The filter order is All → Recent → Favorites in every view.
 - Prompt insertion occurs at the current cursor position; inserting identical content repeatedly creates duplicates
 - Changing the background or output format while an edit is in progress prompts you for confirmation before discarding it
 - Favorites, recent items, thumbnail size, panel width, and Style Boost are stored in the browser
@@ -89,7 +92,7 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 
 Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026年7月現在、画像付き背景プリセットを592件収録**しています。背景を画像で選び、モデルに合わせたプロンプトを編集してtxt2img / img2imgへ挿入できます。
 
-**v1.0.1** では、別ウィンドウのピッカーで挿入や再接続の送信に失敗しても、通信の復旧後に再操作できます。[更新内容](RELEASE_NOTES.md)。ブラウザー内のデータを引き継ぐには、更新後も同じプロファイルとWebUIアドレスを使い、元のWebUIを再読み込みしてピッカーを開き直してください。
+**v1.1.0** では、Backgroundバーに **Enable** を追加しました。Forge NeoでONにすると、選択中の背景が生成時に反映されます。[更新内容](RELEASE_NOTES.md)。ブラウザー内のデータを引き継ぐには、更新後も同じプロファイルとWebUIアドレスを使い、元のWebUIを再読み込みしてピッカーを開き直してください。
 
 ### 主な機能
 
@@ -107,7 +110,7 @@ Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026�
 1. `Background Prompter`タブ、またはtxt2img / img2img下の`Choose in side panel`を開きます。
 2. 背景を検索・選択します。
 3. 必要なら出力形式を変更し、`Style Boost`の`写真`または`アニメ`を選択するか、出力プロンプトを編集します。
-4. `Insert into txt2img`または`Insert into img2img`を押します。
+4. 外側バーの **Enable** がオンなら、選択中の背景文が Forge Neo の生成時に反映されます。**Insert** は背景文を入力欄に入れます。入力済みの背景と選択中の背景を一緒に使え、同じ背景文は生成時に重ねて追加しません。
 
 日本語表示では各ボタンも日本語になります。
 
@@ -124,6 +127,8 @@ Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026�
 `Tags first`は、場面と主要物を通常5～8個のDanbooru風圧縮タグで出力します。場面名の重複、汎用的なforeground object、任意の時刻・照明修飾は省きますが、夜道など場面を成立させる時刻と、ランタンなど実在する光源は残します。位置関係をタグで表しにくい場合だけ短い自然文を補足します。`Natural language first`は詳細な場面説明を維持し、説明に含まれない補助タグだけを追加します。
 
 基本プロンプトはリアル・アニメのスタイルを固定せず、人物不在、読める文字、ロゴの除外指定も含みません。`Style Boost`の初期値はオフで、`写真`と`アニメ`は同時選択できず、選択した短いスタイル指定が編集可能な出力末尾へ追加されます。
+
+外側バーの `Enable` は、生成時の追加と Insert の可否を切り替えます。オフにしても入力欄の文章は残ります。通常タブ・パネル・別タブの内側は`スタイルブーストを有効（Enable Style Boost）`だけとし、主Enableを重複表示しません。BoostがOFFでも、拡張全体がONなら基本の背景文を挿入できます。両者は独立しており、拡張を再びONにしてもBoostはONになりません。Boostを再びONにすると、最後に選んだ写真／アニメへ戻ります。
 
 ### 表示言語
 
@@ -155,6 +160,7 @@ https://github.com/ukr8b3g-cmyk/Background-Prompter
 ### 注意
 
 - 対象はForge Neo / ReForgeです。
+- 通常タブ・サイドパネルを開いたとき、別タブを新規に開いたとき・再読み込みしたときは、検索を空欄、カテゴリをAll categories、表示をAllに戻し、全件表示から始めます。並びは全画面で「すべて → 最近使用 → お気に入り」です。
 - 挿入は現在のカーソル位置です。同じ内容を繰り返し挿入すると重複します。
 - 編集中に背景または出力形式を変える場合は、破棄確認が表示されます。
 - お気に入り、最近使用、サムネイルサイズ、パネル幅、Style Boostはブラウザー内に保存されます。
@@ -169,7 +175,7 @@ The dependency-free regression suite runs the shipped JavaScript in isolated VM 
 
 ```sh
 node --check javascript/krea2_backgrounds.js
-node --test tests/regression.test.cjs tests/shared-state.test.cjs
+node --test "tests/*.test.cjs"
 ```
 
 For real DOM, storage/BroadcastChannel, multiple tabs, focus/selection, reload, retry, and remount checks, run the isolated Chromium fixture using an existing Chrome/Chromium executable:
