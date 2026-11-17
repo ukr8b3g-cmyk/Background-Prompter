@@ -7,7 +7,7 @@
 
 An image-backed background prompt picker for Forge Neo and ReForge. **As of July 2026, it includes 592 background presets with preview images.** Browse visually, generate a model-aware prompt, edit it, and insert it into txt2img or img2img.
 
-**v1.1.0** adds an **Enable** switch to the Background bar. In Forge Neo, it applies the selected background when you generate. See the [release notes](RELEASE_NOTES.md). After updating, reload the original WebUI and reopen its picker tabs using the same browser profile and WebUI address to retain browser data.
+**v1.1.1** remembers the Background bar's **Enable** state. It starts off on first use. See the [release notes](RELEASE_NOTES.md). After updating, reload the original WebUI and reopen its picker tabs using the same browser profile and WebUI address to retain browser data.
 
 ## Features
 
@@ -43,7 +43,7 @@ You can manually select **Tags first** or **Natural language first**. Underscore
 
 Base prompts do not force a realistic or anime style and do not include person, readable-text, or logo exclusions. **Style Boost** is off by default; Photo and Anime are mutually exclusive and append a short style phrase to the editable output.
 
-The outer **Enable** controls application on Generate and the Insert action. Turning it off keeps text already inserted. The regular tab, side panel and linked picker contain only **Enable Style Boost**, which controls the optional style phrase. Turning Boost off leaves the base background insertable when the extension is enabled. The two states are independent. Boost remembers its last Photo/Anime choice, and re-enabling the extension does not enable Boost.
+The outer **Enable** controls application on Generate and the Insert action. It starts off on first use and remembers the last explicit choice for new tabs at the same WebUI address in the same browser profile. Turning it off keeps text already inserted. The regular tab, side panel and linked picker contain only **Enable Style Boost**, which controls the optional style phrase. Turning Boost off leaves the base background insertable when the extension is enabled. The two states are independent. Boost remembers its last Photo/Anime choice, and re-enabling the extension does not enable Boost.
 
 ## Display language
 
@@ -92,7 +92,7 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 
 Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026年7月現在、画像付き背景プリセットを592件収録**しています。背景を画像で選び、モデルに合わせたプロンプトを編集してtxt2img / img2imgへ挿入できます。
 
-**v1.1.0** では、Backgroundバーに **Enable** を追加しました。Forge NeoでONにすると、選択中の背景が生成時に反映されます。[更新内容](RELEASE_NOTES.md)。ブラウザー内のデータを引き継ぐには、更新後も同じプロファイルとWebUIアドレスを使い、元のWebUIを再読み込みしてピッカーを開き直してください。
+**v1.1.1** では、Backgroundバーの **Enable** の状態を記憶します。初回はOFFです。[更新内容](RELEASE_NOTES.md)。ブラウザー内のデータを引き継ぐには、更新後も同じプロファイルとWebUIアドレスを使い、元のWebUIを再読み込みしてピッカーを開き直してください。
 
 ### 主な機能
 
@@ -128,7 +128,7 @@ Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026�
 
 基本プロンプトはリアル・アニメのスタイルを固定せず、人物不在、読める文字、ロゴの除外指定も含みません。`Style Boost`の初期値はオフで、`写真`と`アニメ`は同時選択できず、選択した短いスタイル指定が編集可能な出力末尾へ追加されます。
 
-外側バーの `Enable` は、生成時の追加と Insert の可否を切り替えます。オフにしても入力欄の文章は残ります。通常タブ・パネル・別タブの内側は`スタイルブーストを有効（Enable Style Boost）`だけとし、主Enableを重複表示しません。BoostがOFFでも、拡張全体がONなら基本の背景文を挿入できます。両者は独立しており、拡張を再びONにしてもBoostはONになりません。Boostを再びONにすると、最後に選んだ写真／アニメへ戻ります。
+外側バーの `Enable` は、生成時の追加と Insert の可否を切り替えます。初回はOFFです。同じブラウザープロファイルで同じWebUIを新しく開くと、最後に切り替えた状態を復元します。オフにしても入力欄の文章は残ります。通常タブ・パネル・別タブの内側は`スタイルブーストを有効（Enable Style Boost）`だけとし、主Enableを重複表示しません。BoostがOFFでも、拡張全体がONなら基本の背景文を挿入できます。両者は独立しており、拡張を再びONにしてもBoostはONになりません。Boostを再びONにすると、最後に選んだ写真／アニメへ戻ります。
 
 ### 表示言語
 

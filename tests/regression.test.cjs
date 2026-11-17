@@ -9,6 +9,7 @@ for (const mode of ['channel', 'storage']) {
         const w = world(mode);
         const host = w.page();
         await host.load();
+        host.api.setEnabled(true);
         const picker = await w.picker(host);
         picker.api.updateDraft('forest', null);
         w.drain();
@@ -52,6 +53,7 @@ for (const mode of ['channel', 'storage']) {
         const w = world(mode);
         const host = w.page();
         await host.load();
+        host.api.setEnabled(true);
         const picker = await w.picker(host);
         picker.api.updateDraft('forest', null);
         w.drain();
@@ -75,6 +77,7 @@ for (const mode of ['channel', 'storage']) {
         const w = world(mode);
         const a = w.page(); const b = w.page({ preset: 'flux' });
         await a.load(); await b.load();
+        a.api.setEnabled(true);
         const p = await w.picker(a, { preset: 'flux' });
         assert.equal(p.api.connectionStatus, 'connected');
         assert.equal(p.api.resolvedProfile(), 'tags-first', 'picker uses original host, not its own controls');
@@ -97,7 +100,9 @@ for (const mode of ['channel', 'storage']) {
 
     test(`${mode}: closed host fails safely; reload needs explicit reconnect and retains draft`, async () => {
         const w = world(mode); const a = w.page(); const b = w.page();
-        await a.load(); await b.load(); const p = await w.picker(a);
+        await a.load(); await b.load();
+        a.api.setEnabled(true);
+        const p = await w.picker(a);
         p.api.updateDraft('edited', null); w.drain();
         a.close(); w.drain();
         assert.equal(p.api.connectionStatus, 'disconnected');
@@ -147,7 +152,9 @@ for (const mode of ['channel', 'storage']) {
     });
 
     test(`${mode}: ACK validation, dropped ACK timeout, overlapping requests and unlinked picker`, async () => {
-        const w = world(mode); const a = w.page(); await a.load(); const p = await w.picker(a);
+        const w = world(mode); const a = w.page(); await a.load();
+        a.api.setEnabled(true);
+        const p = await w.picker(a);
         p.api.updateDraft('forest', null); w.drain();
         p.api.requestInsert('txt2img'); const id = p.api.pendingInsertRequestId;
         p.api.requestInsert('img2img');
@@ -212,6 +219,7 @@ for (const profile of ['tags-first', 'natural-first']) {
     for (const [name, original, start, end, tags, natural] of cases) {
         test(`insertion ${profile}: ${name}`, async () => {
             const p = world().page(); await p.load();
+            p.api.setEnabled(true);
             const input = p.input('txt2img'); input.value = original; input.setSelectionRange(start, end);
             assert.ok(p.api.insertIntoPrompt('txt2img', ' forest ', { profile }));
             assert.equal(input.value, profile === 'tags-first' ? tags : natural);
@@ -223,12 +231,14 @@ for (const profile of ['tags-first', 'natural-first']) {
 }
 test('empty/invalid insertions preserve prompt', async () => {
     const p = world().page(); await p.load();
+    p.api.setEnabled(true);
     assert.equal(p.api.insertIntoPrompt('txt2img', '  '), false);
     assert.equal(p.api.insertIntoPrompt('unknown', 'forest'), false);
     assert.equal(p.api.insertIntoPrompt('img2img', null), false);
 });
 test('inserted edge commas do not duplicate existing separators', async () => {
     const p = world().page(); await p.load();
+    p.api.setEnabled(true);
     for (const [original, start, text, expected] of [
         ['cat, red hair', 5, ', forest,', 'cat, forest, red hair'],
         ['cat, red hair', 3, ', forest', 'cat, forest, red hair'],

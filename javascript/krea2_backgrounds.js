@@ -10,6 +10,7 @@
     const SHARED_KEY = `k2bg_shared_v2:${scope}`;
     const SHARED_OP_PREFIX = `k2bg_shared_op_v3:${scope}:`;
     const EVENT_KEY = `k2bg_event_v2:${scope}`;
+    const ENABLED_PREF_KEY = `k2bg_enabled_v1:${scope}`;
     const STANDALONE_HASH = "#background-prompter";
     const SETTINGS_VERSION = 2;
     const DRAWER_CARD_MIN = 130;
@@ -217,7 +218,7 @@
 
     const state = {
         ready: false,
-        enabled: true,
+        enabled: false,
         enabledRevision: { counter:0, actor:'legacy' },
         presets: [],
         totalAvailable: 592,
@@ -458,9 +459,13 @@
 
     function loadStoredState() {
         try {
-            const saved = JSON.parse(localStorage.getItem(STATE_KEY) || localStorage.getItem("k2bg_state_v1") || "{}");
+            const tabState = localStorage.getItem(STATE_KEY);
+            const saved = JSON.parse(tabState || localStorage.getItem("k2bg_state_v1") || "{}");
             const shared = JSON.parse(localStorage.getItem(SHARED_KEY) || "null") || saved;
-            state.enabled = saved.enabled === undefined ? true : saved.enabled === true;
+            const preferred = localStorage.getItem(ENABLED_PREF_KEY);
+            state.enabled = tabState && typeof saved.enabled === "boolean"
+                ? saved.enabled
+                : preferred === "true" || (preferred !== "false" && saved.enabled === true);
             state.enabledRevision=validEnabledRevision(saved.enabledRevision)?{...saved.enabledRevision}:{counter:0,actor:'legacy'};
             state.selectedName = saved.selectedName || "";
             state.profile = ["auto", "tags-first", "natural-first"].includes(saved.profile) ? saved.profile : "auto";
@@ -886,6 +891,11 @@
         mergeStoredEnabled();
         state.enabled = value === true;
         state.enabledRevision={counter:Math.max(Date.now(),state.enabledRevision.counter+1),actor:instanceId};
+        try {
+            localStorage.setItem(ENABLED_PREF_KEY, String(state.enabled));
+        } catch (error) {
+            console.warn("Background Prompter: Enable preference could not be saved", error);
+        }
         persistState();
         syncEnableControls();
         // Only an explicit toggle changes Enable. A delayed preset/draft

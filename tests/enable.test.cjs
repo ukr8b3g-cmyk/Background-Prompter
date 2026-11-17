@@ -2,15 +2,38 @@ const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const {world} = require('./harness.cjs');
 
-test('Enable defaults on for old state and restores only typed booleans', () => {
+test('Enable defaults off and restores only typed booleans', () => {
     for (const value of [undefined, false, true, 'false']) {
         const w=world(), p=w.page();
         const key=`k2bg_state_v2:/neo:${p.api.hostSessionId}`;
         w.storage.set(key,JSON.stringify({enabled:value,selectedName:'Forest',draft:'KEEP',dirty:true}));
         p.api.loadStoredState();
-        assert.equal(p.api.state.enabled,value===undefined || value===true);
+        assert.equal(p.api.state.enabled,value===true);
         assert.equal(p.api.state.draft,'KEEP');
     }
+});
+
+test('A new tab restores the last explicit Enable choice for this WebUI path', async () => {
+    const w = world();
+    const first = w.page();
+    await first.load();
+    assert.equal(first.api.state.enabled, false);
+    first.api.setEnabled(true);
+    first.close();
+
+    const next = w.page();
+    await next.load();
+    assert.notEqual(next.api.hostSessionId, first.api.hostSessionId);
+    assert.equal(next.api.state.enabled, true);
+    const otherPath = w.page({ url: 'http://fixture.test/other/' });
+    await otherPath.load();
+    assert.equal(otherPath.api.state.enabled, false);
+
+    next.api.setEnabled(false);
+    next.close();
+    const reopened = w.page();
+    await reopened.load();
+    assert.equal(reopened.api.state.enabled, false);
 });
 
 for (const mode of ['channel','storage']) {
@@ -31,7 +54,8 @@ for (const mode of ['channel','storage']) {
     });
 
     test(`${mode}: picker sync and late requests honor current host Enable; cached rejection is not replayed`, async () => {
-        const w=world(mode),host=w.page(); await host.load(); const picker=await w.picker(host);
+        const w=world(mode),host=w.page(); await host.load(); host.api.setEnabled(true);
+        const picker=await w.picker(host);
         picker.api.updateDraft('forest',null); w.drain();
         picker.api.requestInsert('txt2img');
         const request=w.sent.find(message=>message.type==='insert-request');
@@ -50,6 +74,7 @@ for (const mode of ['channel','storage']) {
 
     test(`${mode}: disabled original host initializes a new picker and other sessions stay independent`, async () => {
         const w=world(mode),host=w.page(),other=w.page();await host.load();await other.load();
+        other.api.setEnabled(true);
         host.api.setEnabled(false);w.drain();
         const picker=await w.picker(host);
         assert.equal(picker.api.state.enabled,false);assert.equal(other.api.state.enabled,true);
@@ -73,6 +98,7 @@ for (const [entryPoint, target, index] of [
             browser[entryPoint] = (...args) => args;
         }
         await host.load();
+        host.api.setEnabled(true);
 
         const input = host.input(target);
         input.value = 'subject, manually inserted background';
