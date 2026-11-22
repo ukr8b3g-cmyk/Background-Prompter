@@ -57,6 +57,8 @@
             favorites: "Favorites",
             recent: "Recent",
             cardSize: "Card size",
+            displayCount: "Items per page",
+            customCount: "Custom",
             favorite: "Favorite",
             favorited: "Favorited",
             selectBackground: "Select a background.",
@@ -132,6 +134,8 @@
             favorites: "お気に入り",
             recent: "最近使用",
             cardSize: "カードサイズ",
+            displayCount: "表示件数",
+            customCount: "スライダーで指定",
             favorite: "お気に入り",
             favorited: "お気に入り済み",
             selectBackground: "背景を選択してください。",
@@ -235,7 +239,8 @@
         group: "All categories",
         view: "all",
         page: 0,
-        pageSize: 40,
+        countMode: "40",
+        customCount: 40,
         cardSize: 176,
         drawerOpen: false,
         drawerQuery: "",
@@ -472,6 +477,8 @@
             state.styleBoost = ["none", "photo", "anime"].includes(saved.styleBoost) ? saved.styleBoost : "none";
             state.styleBoostLast = state.styleBoost !== 'none' ? state.styleBoost : ['photo','anime'].includes(saved.styleBoostLast) ? saved.styleBoostLast : 'photo';
             state.drawerGroup = saved.drawerGroup || "All categories";
+            if (["40", "80", "custom", "all"].includes(saved.countMode)) state.countMode = saved.countMode;
+            if (Number.isSafeInteger(saved.customCount) && saved.customCount > 0) state.customCount = saved.customCount;
             state.cardSize = clamp(typeof saved.cardSize === "number" ? saved.cardSize : NaN, 148, 228, 176);
             state.drawerCardSize = Number(saved.settingsVersion) >= SETTINGS_VERSION
                 ? clamp(Number(saved.drawerCardSize), DRAWER_CARD_MIN, DRAWER_CARD_MAX, DRAWER_CARD_MIN)
@@ -515,6 +522,8 @@
                 dirty: state.dirty,
                 drawerGroup: state.drawerGroup,
                 cardSize: state.cardSize,
+                countMode: state.countMode,
+                customCount: state.customCount,
                 drawerCardSize: state.drawerCardSize,
                 drawerWidth: state.drawerWidth,
                 favorites: [...state.favorites],
@@ -986,10 +995,12 @@
         const mount = appRoot().getElementById(APP_ID) || document.getElementById(APP_ID);
         if (!mount || mount.dataset.ready !== "true") return;
         const filtered = filteredPresets();
-        const pageCount = Math.max(1, Math.ceil(filtered.length / state.pageSize));
+        const pageSize = displayCount();
+        refreshCountControls(mount);
+        const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
         state.page = Math.min(state.page, pageCount - 1);
-        const start = state.page * state.pageSize;
-        const visible = filtered.slice(start, start + state.pageSize);
+        const start = state.page * pageSize;
+        const visible = filtered.slice(start, start + pageSize);
         const pagination = pageCount > 1
             ? `<nav class="k2bg-pagination" aria-label="Background pages">
                 <button type="button" data-k2bg-action="page" data-page="prev"${state.page === 0 ? " disabled" : ""}>${t("previous")}</button>
@@ -1067,7 +1078,7 @@
     function openDrawer(target, opener) {
         state.target = target;
         state.drawerView = 'all';
-        state.drawerLimit = 40;
+        state.drawerLimit = displayCount();
         state.drawerQuery = '';
         state.drawerGroup = 'All categories';
         state.drawerOpen = true;
@@ -1106,6 +1117,7 @@
         const grid = host.querySelector("[data-k2bg-drawer-grid]");
         if (!grid) return;
         const filtered = filteredPresets({ drawer: true });
+        refreshCountControls(host);
         const count=host.querySelector('[data-k2bg-library-count]');
         if(count) count.textContent=`${filtered.length} / ${state.totalAvailable}`;
         const visible = filtered.slice(0, state.drawerLimit);
@@ -1189,6 +1201,33 @@
         let count=toolbar.querySelector('[data-k2bg-count]');
         if(drawer) { count=document.createElement('span'); count.className='k2bg-count'; count.setAttribute('data-k2bg-library-count',''); }
         row.append(toolbar.querySelector('.k2bg-size'),count); toolbar.append(row);
+        row.insertAdjacentHTML("afterend", `<div class="k2bg-library-size-row">
+            <label><span>${t("displayCount")}</span>
+                <select data-k2bg-action="count-mode">
+                    <option value="40">40</option><option value="80">80</option>
+                    <option value="custom">${t("customCount")}</option><option value="all">${t("all")}</option>
+                </select>
+            </label>
+            <input type="range" min="1" max="${state.presets.length}" step="1" data-k2bg-action="custom-count" aria-label="${t("displayCount")}">
+            <output data-k2bg-custom-value></output>
+        </div>`);
+    }
+
+    function displayCount() {
+        if (state.countMode === "all") return Math.max(1, state.presets.length);
+        if (state.countMode === "custom") return state.customCount;
+        return Number(state.countMode);
+    }
+
+    function refreshCountControls(root) {
+        const mode = root.querySelector('[data-k2bg-action="count-mode"]');
+        if (!mode) return;
+        mode.value = state.countMode;
+        const slider = root.querySelector('[data-k2bg-action="custom-count"]');
+        const output = root.querySelector('[data-k2bg-custom-value]');
+        slider.hidden = output.hidden = state.countMode !== "custom";
+        slider.value = state.customCount;
+        output.value = slider.value;
     }
 
     function refreshAll() {
@@ -1387,8 +1426,8 @@
         if (action === "select") selectPreset(button.dataset.name);
         else if (action === "favorite") toggleFavorite(button.dataset.name);
         else if (action === "view") { state.view = button.dataset.view; state.page = 0; refreshFullApp(); }
-        else if (action === "drawer-view") { state.drawerView = button.dataset.view; state.drawerLimit = 40; renderDrawerGrid(); }
-        else if (action === "drawer-more") { state.drawerLimit += 40; renderDrawerGrid(); }
+        else if (action === "drawer-view") { state.drawerView = button.dataset.view; state.drawerLimit = displayCount(); renderDrawerGrid(); }
+        else if (action === "drawer-more") { state.drawerLimit += displayCount(); renderDrawerGrid(); }
         else if (action === "drawer") openDrawer(button.dataset.target, button);
         else if (action === "close") closeDrawer();
         else if (action === "full") { resetFullFilter(); closeDrawer(); activateBackgroundTab(); }
@@ -1404,7 +1443,8 @@
     function handleInput(event) {
         const action = event.target.dataset.k2bgAction;
         if (action === "search") { state.query = event.target.value; state.page = 0; refreshFullApp(); }
-        else if (action === "drawer-search") { state.drawerQuery = event.target.value; state.drawerLimit = 40; renderDrawerGrid(); }
+        else if (action === "drawer-search") { state.drawerQuery = event.target.value; state.drawerLimit = displayCount(); renderDrawerGrid(); }
+        else if (action === "custom-count") event.target.parentElement.querySelector("output").value = event.target.value;
         else if (action === "drawer-card-size") { state.drawerCardSize = Number(event.target.value); persistState(); renderDrawerGrid(); }
         else if (action === "card-size") { state.cardSize = clamp(Number(event.target.value), 148, 228, 176); persistState(); refreshFullApp(); }
         else if (action === "page-range") goToPage(event.target.value);
@@ -1412,7 +1452,7 @@
     }
 
     function goToPage(value) {
-        const pageCount = Math.max(1, Math.ceil(filteredPresets().length / state.pageSize));
+        const pageCount = Math.max(1, Math.ceil(filteredPresets().length / displayCount()));
         const requested = Math.trunc(Number(value));
         if (!Number.isFinite(requested)) {
             refreshFullApp();
@@ -1427,7 +1467,17 @@
         if (action === "enabled") setEnabled(event.target.checked);
         else if (action === 'boost-enabled') setStyleBoostEnabled(event.target.checked);
         else if (action === "group") { state.group = event.target.value; state.page = 0; refreshFullApp(); }
-        else if (action === "drawer-group") { state.drawerGroup = event.target.value; state.drawerLimit = 40; persistState(); renderDrawerGrid(); }
+        else if (action === "drawer-group") { state.drawerGroup = event.target.value; state.drawerLimit = displayCount(); persistState(); renderDrawerGrid(); }
+        else if (action === "count-mode" || action === "custom-count") {
+            const first = state.page * displayCount();
+            if (action === "count-mode") state.countMode = event.target.value;
+            else state.customCount = Number(event.target.value);
+            state.page = Math.floor(first / displayCount());
+            state.drawerLimit = displayCount();
+            persistState();
+            refreshFullApp();
+            if (state.drawerOpen) renderDrawerGrid();
+        }
         else if (action === "page-number") goToPage(event.target.value);
         else if (action === "profile") changeProfile(event.target.value);
     }
@@ -1584,6 +1634,7 @@
         state.presets = Array.isArray(payload.presets) ? payload.presets : [];
         state.totalAvailable = Number(payload.total_available) || state.presets.length;
         if (!state.presets.length) throw new Error("No background presets were loaded");
+        state.customCount = Math.min(state.customCount, state.presets.length);
         if (!state.presets.some((item) => item.name === state.selectedName)) {
             hasSavedDraft = false;
             state.selectedName = state.presets[3]?.name || state.presets[0].name;
