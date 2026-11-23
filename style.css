@@ -939,6 +939,18 @@ body.k2bg-standalone #k2bg-app [data-k2bg-connection] {
 .k2bg-library-size-row .k2bg-size > span { white-space:nowrap; }
 .k2bg-library-size-row input[type=range] { flex:1; width:100%; min-width:0; height:16px; margin:0; }
 .k2bg-library-size-row .k2bg-count { margin:0; font-size:inherit; line-height:1.4; }
+
+.k2bg-library-size-row select[data-k2bg-action="count-mode"],
+.k2bg-library-size-row select[data-k2bg-action="count-mode"] option {
+    color-scheme: dark;
+    color: var(--neutral-100, #f3f4f6) !important;
+    background-color: var(--neutral-800, #1f2937) !important;
+}
+
+.k2bg-library-size-row select[data-k2bg-action="count-mode"] option:checked {
+    background-color: var(--neutral-700, #374151) !important;
+}
+
 .k2bg-grid, .k2bg-drawer-grid { gap:8px; align-items:start; }
 .k2bg-grid { grid-template-columns:repeat(auto-fill,minmax(min(var(--k2bg-card-min,176px),100%),1fr)); }
 .k2bg-card-select { margin:0 !important; line-height:1.4; }
