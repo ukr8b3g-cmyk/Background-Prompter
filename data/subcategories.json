@@ -1,0 +1,874 @@
+{
+  "Edo period": {
+    "ja": "江戸時代",
+    "ids": [
+      "edo_farmhouse_irori",
+      "edo_peasant_farmhouse_room",
+      "edo_nagaya_alley",
+      "edo_period_castle_grand_hall",
+      "edo_bathhouse_entrance_changing_room",
+      "edo_bathhouse_late_period_interior",
+      "edo_bathhouse_mixed_interior",
+      "edo_commoner_street",
+      "edo_craftsman_workshop",
+      "edo_day_laborers_cargo_work",
+      "edo_machibugyo_courtroom_upper_dais",
+      "edo_machibugyo_shirasu_gravel_court",
+      "edo_rice_paddy_farm_work",
+      "edo_soba_shop_interior",
+      "yoshiwara_corridor_storefront",
+      "yoshiwara_tatami_room",
+      "edo_nagaya_back_room",
+      "edo_ukiyo_design_room",
+      "edo_ukiyo_block_carving",
+      "edo_ukiyo_printing_room",
+      "edo_town_smithy",
+      "edo_yoshiwara_side_lane",
+      "edo_nagaya_washing_well",
+      "edo_terakoya_room",
+      "edo_roadside_dango_teahouse",
+      "edo_hatago_upstairs",
+      "edo_dry_terrace_fields",
+      "edo_field_winnower",
+      "edo_snow_gassho_hamlet",
+      "edo_gassho_hearth_room",
+      "edo_farm_straw_eaves",
+      "edo_shrine_draw_well",
+      "edo_yuya_zakuroguchi",
+      "edo_yuya_firebox",
+      "edo_sushi_yatai",
+      "edo_soba_yatai",
+      "edo_nihonbashi_stall",
+      "edo_gofuku_shop",
+      "edo_nihonbashi_deck",
+      "edo_kabuki_kaomise",
+      "edo_ryogoku_show_tent",
+      "edo_ekoin_sumo",
+      "edo_rakugo_yose",
+      "edo_ezoshi_print_shop",
+      "edo_fukagawa_boathouse",
+      "edo_nagaya_entry_kitchen",
+      "edo_poor_farm_kitchen",
+      "edo_tokaido_milestone",
+      "edo_post_town_dusk",
+      "edo_hatago_reception",
+      "edo_fujieda_relay",
+      "edo_oi_river_crossing",
+      "edo_kuwana_landing",
+      "edo_hinaga_fork",
+      "edo_ise_onshi",
+      "edo_rice_watermill",
+      "edo_farm_weaving",
+      "edo_winter_papermaking",
+      "edo_gassho_silkworm_loft",
+      "edo_yagiri_ferry",
+      "edo_shirasu_side_view"
+    ]
+  },
+  "Showa era": {
+    "ja": "昭和",
+    "ids": [
+      "showa_kitchen",
+      "showa_dagashi_shop",
+      "showa_snack_bar",
+      "showa_snack_bar_entrance",
+      "showa_station_waiting_room",
+      "showa_public_phone_booth",
+      "showa_sento_bandai",
+      "showa_apartment_entrance",
+      "showa_cabaret_stage",
+      "showa_tobacco_shop",
+      "showa_cheap_1ldk_apartment_room",
+      "showa_kamishibai_bicycle_cart",
+      "showa_danchi_balance_bathroom",
+      "showa_danchi_narrow_kitchen",
+      "showa_danchi_tatami_living_room",
+      "showa_high_growth_city_bus",
+      "showa_high_growth_commuter_train",
+      "showa_high_growth_office",
+      "showa_high_growth_street",
+      "showa_terraced_rice_fields",
+      "jnr_express_box_seats",
+      "staffed_railway_ticket_barriers",
+      "jnr_station_baggage_office",
+      "tramway_shopping_street",
+      "room_above_a_machine_shop",
+      "showa_set_meal_stove_kitchen",
+      "showa_diner_serving_hatch",
+      "showa_noodle_boiling_counter",
+      "showa_chinese_diner_wok_range"
+    ]
+  },
+  "Nature": {
+    "ja": "自然・風景",
+    "ids": [
+      "tree_portrait_background",
+      "forest_path",
+      "mountain_summit_rest_stop",
+      "riverbank",
+      "beach",
+      "tropical_beach",
+      "cherry_blossom_avenue",
+      "riverside",
+      "everest_ice_wall_climbing_scene",
+      "waterfall_plunge_pool",
+      "rock_shelf_behind_a_waterfall",
+      "bamboo_grove_path",
+      "autumn_ravine_riverbed",
+      "beech_forest_leaf_floor",
+      "lavender_field_rows",
+      "sunflower_field_path",
+      "rapeseed_riverbank",
+      "cosmos_meadow",
+      "blizzard_plain",
+      "frozen_lake_surface",
+      "milky_way_grassland",
+      "sand_dune_crest",
+      "natural_dune_oasis_pool",
+      "red_canyon_floor",
+      "limestone_cavern_lake",
+      "cliff_sheltered_cove",
+      "rocky_shore_tide_pools",
+      "tidal_mudflat_channels",
+      "mangrove_tidal_channel",
+      "alpine_wildflower_meadow",
+      "ridge_above_a_cloud_sea",
+      "savanna_waterhole",
+      "arabian_desert_dromedaries"
+    ]
+  },
+  "Streets and alleys": {
+    "ja": "街路・路地",
+    "ids": [
+      "city_street",
+      "european_street",
+      "new_york_street",
+      "street_snap",
+      "back_alley",
+      "night_street",
+      "london_bus_street",
+      "greek_island_alley",
+      "modern_city_street",
+      "paris_cafe_street",
+      "pedestrian_overpass_stair_landing"
+    ]
+  },
+  "Railways and stations": {
+    "ja": "鉄道・駅",
+    "ids": [
+      "train_platform",
+      "subway_platform",
+      "rural_unmanned_station",
+      "station_coin_locker",
+      "railway_track_path",
+      "under_elevated_railway",
+      "subway_station",
+      "1990s_hua_lamphong_station_platform",
+      "abandoned_subway_platform",
+      "packed_commuter_train_platform",
+      "train_interior",
+      "train_compartment",
+      "overnight_two_berth_compartment",
+      "european_carriage_side_corridor",
+      "vintage_dining_car_window_table",
+      "train_rear_observation_balcony",
+      "steam_locomotive_firebox_cab",
+      "vintage_tram_entrance_platform",
+      "steel_carriage_rooftop_curve",
+      "stepped_mountain_funicular_cabin"
+    ]
+  },
+  "Homes": {
+    "ja": "住宅・居室",
+    "ids": [
+      "living_room",
+      "kitchen",
+      "bathroom",
+      "shower_room",
+      "bedroom",
+      "dining_room",
+      "girl_room",
+      "boy_room",
+      "family_living",
+      "attic_bedroom",
+      "basement_tool_room",
+      "bay_window_reading_nook",
+      "boy_child_bedroom",
+      "home_entrance_genkan"
+    ]
+  },
+  "Schools": {
+    "ja": "学校",
+    "ids": [
+      "classroom",
+      "school_hallway",
+      "school_gym",
+      "school_infirmary",
+      "school_rooftop",
+      "university_lecture_hall",
+      "calligraphy_classroom",
+      "painting_classroom",
+      "school_science_preparation_room",
+      "drained_school_swimming_pool",
+      "school_gymnastics_apparatus_corner",
+      "narrow_school_sports_clubroom",
+      "small_school_cultural_clubroom",
+      "school_photography_club_darkroom",
+      "school_band_instrument_storeroom",
+      "school_gallery_table_tennis_room",
+      "school_kendo_armor_rack",
+      "school_sewing_classroom",
+      "school_woodworking_classroom",
+      "student_council_print_room",
+      "school_bread_counter_window",
+      "school_club_annex_walkway"
+    ]
+  },
+  "Spacecraft and stations": {
+    "ja": "宇宙船・宇宙基地",
+    "ids": [
+      "spaceship_cargo_hold",
+      "space_station_airlock_vestibule",
+      "orbital_hotel_suite",
+      "lunar_base_private_room",
+      "lunar_lander_cockpit",
+      "orbital_spacecraft_exterior_repair",
+      "rotating_space_habitat_ring"
+    ]
+  },
+  "Fantasy worlds": {
+    "ja": "ファンタジー世界",
+    "ids": [
+      "adventurer_guild_reception",
+      "dungeon_entrance",
+      "dungeon_interior",
+      "fantasy_castle",
+      "magic_forest",
+      "rpg_town",
+      "ancient_ruins",
+      "fantasy_adventurer_guild_reception",
+      "fantasy_beastfolk_tavern",
+      "fantasy_quest_board_square"
+    ]
+  },
+  "Qing village and town": {
+    "ja": "清代の農村と町",
+    "ids": [
+      "qing_north_china_kang_room",
+      "qing_farmhouse_stove_alcove",
+      "qing_loess_cave_dwelling",
+      "qing_village_grain_mill",
+      "qing_beijing_hutong_rented_room",
+      "qing_city_gate_inn_kitchen_yard",
+      "qing_steamed_bun_stall",
+      "qing_village_tofu_workshop",
+      "qing_jiangnan_canal_kitchen_steps",
+      "qing_suzhou_weaving_room",
+      "qing_indigo_dye_yard",
+      "qing_canal_bridge_teashop",
+      "qing_grand_canal_freight_steps",
+      "qing_jingdezhen_bowl_workshop",
+      "qing_hill_village_basket_workshop",
+      "qing_jiangnan_covered_boat_cabin"
+    ]
+  },
+  "China in the 1960s": {
+    "ja": "1960年代の中国",
+    "ids": [
+      "china_1960s_north_china_farm_kang_room",
+      "china_1960s_earthen_kitchen_stove",
+      "china_1960s_shanghai_lilong_shared_kitchen",
+      "china_1960s_shikumen_partitioned_room",
+      "china_1960s_beijing_courtyard_standpipe",
+      "china_1960s_urban_grain_ration_shop",
+      "china_1960s_rural_supply_cooperative",
+      "china_1960s_production_team_ledger_room",
+      "china_1960s_village_threshing_yard",
+      "china_1960s_irrigation_pump_shed",
+      "china_1960s_village_clinic",
+      "china_1960s_factory_gate_bicycle_shed",
+      "china_1960s_factory_dormitory",
+      "china_1960s_bicycle_repair_stall",
+      "china_1960s_school_corridor_with_wall_posters",
+      "china_1960s_village_youth_dormitory"
+    ]
+  },
+  "Asian vernacular life": {
+    "ja": "アジアの暮らし",
+    "ids": [
+      "joseon_ondol_kitchen",
+      "joseon_earthenware_jar_terrace",
+      "tibetan_butter_churn_kitchen",
+      "northern_vietnamese_rice_courtyard",
+      "mekong_canal_kitchen",
+      "thai_undercroft_workspace",
+      "javanese_batik_workshop",
+      "bengal_pottery_yard",
+      "himalayan_wayside_shelter"
+    ]
+  },
+  "Norse settlements": {
+    "ja": "北欧の集落・西暦1000年頃",
+    "ids": [
+      "norse_longhouse_hearth",
+      "icelandic_turf_house_passage",
+      "norse_loom_room",
+      "fjord_boathouse_interior",
+      "norse_ship_repair_strand",
+      "norse_bog_iron_shed",
+      "north_sea_stockfish_racks",
+      "norse_hay_barn"
+    ]
+  },
+  "Medieval European livelihoods": {
+    "ja": "中世ヨーロッパの暮らし",
+    "ids": [
+      "tenant_cottage_interior",
+      "medieval_house_byre",
+      "french_communal_bread_oven",
+      "medieval_watermill_grinding_floor",
+      "medieval_fulling_mill",
+      "medieval_tannery_yard",
+      "medieval_shutter_shopfront",
+      "abbey_almonry_hatch"
+    ]
+  },
+  "Arabian and Levantine life": {
+    "ja": "アラブの暮らし",
+    "ids": [
+      "cairo_neighborhood_bread_oven",
+      "damascus_domestic_courtyard",
+      "aleppo_vaulted_souk",
+      "levantine_caravanserai_gallery",
+      "arabian_oasis_irrigation_channel",
+      "omani_dhow_yard",
+      "bedouin_black_tent_interior",
+      "yemeni_terrace_cistern"
+    ]
+  },
+  "African settlements": {
+    "ja": "アフリカの暮らし",
+    "ids": [
+      "maasai_earthen_house_interior",
+      "maasai_livestock_enclosure",
+      "djenne_earthen_lane",
+      "sahel_granary_yard",
+      "northern_ghana_compound_courtyard",
+      "ethiopian_injera_kitchen",
+      "zanzibar_stone_house_entrance",
+      "west_african_coastal_fish_smokehouse",
+      "nama_mat_house_exterior",
+      "basotho_highland_roundhouse"
+    ]
+  },
+  "Amazon waterways and homes": {
+    "ja": "アマゾンの水辺と暮らし",
+    "ids": [
+      "upper_rio_negro_maloca",
+      "amazon_manioc_processing_shelter",
+      "amazon_dugout_landing",
+      "amazon_forest_edge_manioc_garden",
+      "rio_negro_fish_trap_shelter",
+      "amazon_flooded_forest_passage"
+    ]
+  },
+  "Inner Asian grasslands": {
+    "ja": "内陸アジアの草原",
+    "ids": [
+      "inner_mongolian_pasture_well"
+    ]
+  },
+  "Fantasy strongholds": {
+    "ja": "架空王国の城と要塞",
+    "ids": [
+      "northern_frontier_keep_yard",
+      "winter_fortress_council_chamber",
+      "ice_wall_lift_station",
+      "capital_map_council_chamber",
+      "red_fortress_underpass",
+      "sea_fortress_cavern_landing",
+      "mountain_fortress_drawbridge_gate",
+      "steppe_clan_pavilion",
+      "southern_sandstone_audience_hall",
+      "subterranean_dragon_hall"
+    ]
+  },
+  "Age of sail": {
+    "ja": "帆船と海賊船",
+    "ids": [
+      "pirate_stern_cabin",
+      "pirate_ship_gun_deck",
+      "pirate_hammock_deck",
+      "pirate_cargo_hold",
+      "pirate_mast_lookout"
+    ]
+  },
+  "Osaka Expo 1970": {
+    "ja": "1970年大阪万博",
+    "ids": [
+      "expo_70_festival_plaza",
+      "expo_70_tree_of_life",
+      "expo_70_dream_pond"
+    ]
+  },
+  "Fantasy adventuring towns": {
+    "ja": "異世界の冒険街",
+    "ids": [
+      "guild_materials_appraisal_counter",
+      "adventuring_town_cellar_tavern",
+      "fantasy_outfitter_shop",
+      "wayfarer_hostel_bunkroom",
+      "fantasy_caravan_departure_yard"
+    ]
+  },
+  "Castle school of magic": {
+    "ja": "古城の魔法学校",
+    "ids": [
+      "castle_school_potion_laboratory",
+      "castle_school_observatory",
+      "castle_school_herbarium_greenhouse",
+      "castle_school_restricted_reading_alcove",
+      "castle_school_common_room"
+    ]
+  },
+  "Medieval abbey": {
+    "ja": "中世修道院",
+    "ids": [
+      "abbey_chapter_house",
+      "abbey_scriptorium",
+      "abbey_labyrinth_library",
+      "abbey_cloister_garth",
+      "abbey_refectory"
+    ]
+  },
+  "Seasonal places": {
+    "ja": "季節・行事",
+    "ids": [
+      "halloween_neighborhood_street",
+      "pumpkin_patch",
+      "christmas_living_room",
+      "candlelit_christmas_nave",
+      "new_year_kadomatsu_entrance",
+      "hatsumode_shrine_amulet_stall",
+      "obon_cemetery_lanterns",
+      "toro_nagashi_riverbank",
+      "rainy_hydrangea_temple_steps"
+    ]
+  },
+  "Korean life": {
+    "ja": "韓国の暮らし",
+    "ids": [
+      "seoul_banchan_market_aisle",
+      "korean_loess_sauna_chamber",
+      "hanok_wooden_hall",
+      "pojangmacha_stall_interior"
+    ]
+  },
+  "Shanghai neighborhoods": {
+    "ja": "上海の町並み",
+    "ids": [
+      "shanghai_lilong_lane_entrance"
+    ]
+  },
+  "Southeast Asian places": {
+    "ja": "東南アジアの風景",
+    "ids": [
+      "hoi_an_lantern_street",
+      "mekong_floating_produce_market",
+      "balinese_split_gate_court",
+      "balinese_terrace_diversion_weir"
+    ]
+  },
+  "Indian street life": {
+    "ja": "インドの街と水辺",
+    "ids": [
+      "indian_riverside_ghat",
+      "indian_chai_stove_stall",
+      "cycle_rickshaw_stand"
+    ]
+  },
+  "Islamic architecture": {
+    "ja": "イスラム建築",
+    "ids": [
+      "mosque_prayer_hall",
+      "hammam_hot_room"
+    ]
+  },
+  "Latin American places": {
+    "ja": "中南米の市場と暮らし",
+    "ids": [
+      "mexican_dried_chile_market",
+      "day_of_the_dead_home_altar",
+      "andean_textile_market"
+    ]
+  },
+  "Northern European places": {
+    "ja": "北方の町と建築",
+    "ids": [
+      "russian_dacha_veranda",
+      "northern_russian_timber_church_interior",
+      "nordic_fishing_village_wharf"
+    ]
+  },
+  "Haunted places": {
+    "ja": "ホラーの舞台",
+    "ids": [
+      "abandoned_ward_call_station",
+      "haunted_manor_library",
+      "night_hillside_torii_passage"
+    ]
+  },
+  "Steam age settings": {
+    "ja": "蒸気機関とスチームパンク",
+    "ids": [
+      "steampunk_gear_works",
+      "steampunk_airship_engine_gondola",
+      "steam_locomotive_roundhouse"
+    ]
+  },
+  "Mechanical and future cities": {
+    "ja": "メカと未来都市",
+    "ids": [
+      "mecha_hangar_upper_catwalk",
+      "ground_mecha_underside_dock",
+      "cyberpunk_viaduct_food_street",
+      "retrofuturist_city_diorama"
+    ]
+  },
+  "Early Japanese history": {
+    "ja": "古代・中世の日本",
+    "ids": [
+      "jomon_pit_house_interior",
+      "yayoi_raised_granary_yard",
+      "heian_palace_pond_garden",
+      "kamakura_residence_stable_entry",
+      "sengoku_field_headquarters",
+      "momoyama_tea_garden_waiting_shelter",
+      "jomon_pit_house_entrance"
+    ]
+  },
+  "Meiji and Taisho Japan": {
+    "ja": "明治・大正",
+    "ids": [
+      "meiji_ginza_brick_arcade",
+      "meiji_yokohama_gaslit_quay",
+      "meiji_jinrikisha_depot",
+      "meiji_elementary_classroom",
+      "taisho_mixed_style_parlor",
+      "taisho_silent_picture_theater"
+    ]
+  },
+  "Postwar Japan": {
+    "ja": "戦後の日本",
+    "ids": [
+      "postwar_japanese_black_market",
+      "repatriation_station_desk",
+      "postwar_makeshift_shack_room"
+    ]
+  },
+  "Civic and everyday places": {
+    "ja": "暮らしと公共施設",
+    "ids": [
+      "funeral_hall_family_waiting_room",
+      "crematorium_garden_waiting_lounge",
+      "newly_occupied_moving_box_room",
+      "moving_van_loading_bay",
+      "election_campaign_office",
+      "gymnasium_polling_station",
+      "japanese_tax_filing_hall",
+      "driving_school_practice_circuit",
+      "driver_license_center_counter",
+      "pet_memorial_farewell_room",
+      "veterinary_surgical_prep_room"
+    ]
+  },
+  "Agriculture and fisheries": {
+    "ja": "農業と漁業の現場",
+    "ids": [
+      "farm_polytunnel_irrigation_rows",
+      "orchard_grading_line",
+      "dairy_barn_feed_alley",
+      "poultry_egg_collection_aisle",
+      "fish_auction_lot_floor",
+      "japanese_cooperative_fish_drying_yard",
+      "offshore_oyster_rafts",
+      "combine_harvester_wheat_cab"
+    ]
+  },
+  "Ancient monuments in their prime": {
+    "ja": "古代遺跡の当時の姿",
+    "ids": [
+      "greek_temple_painted_colonnade",
+      "giza_pyramid_construction_yard"
+    ]
+  },
+  "Derelict Japanese places": {
+    "ja": "日本の廃墟",
+    "ids": [
+      "derelict_timber_school_classroom",
+      "drained_ryokan_bath_hall",
+      "closed_rooftop_amusement_park"
+    ]
+  },
+  "Murals in their prime": {
+    "ja": "壁画の当初の姿",
+    "ids": [
+      "takamatsuzuka_painted_chamber_in_its_prime",
+      "horyuji_golden_hall_murals_in_their_prime",
+      "etruscan_painted_tomb_chamber"
+    ]
+  },
+  "Mediterranean ruins": {
+    "ja": "地中海の遺跡",
+    "ids": [
+      "greek_temple_ruined_colonnade"
+    ]
+  },
+  "Thailand around 1970": {
+    "ja": "1970年前後のタイの暮らし",
+    "ids": [
+      "isan_farm_room",
+      "tha_kha_floating_market_bank",
+      "thai_market_rice_shop",
+      "thai_silk_merchant_reception_room",
+      "isan_mudmee_silk_loom_shed",
+      "thai_khon_mask_room",
+      "thai_temple_scripture_library_walkway",
+      "thonburi_canal_ferry_pier",
+      "northern_thai_rice_barn_interior",
+      "southern_thai_rubber_sheet_shed"
+    ]
+  },
+  "Prehistoric rock art": {
+    "ja": "先史時代の岩絵",
+    "ids": [
+      "muna_prehistoric_hand_stencil_cave"
+    ]
+  },
+  "Historic Tahiti": {
+    "ja": "昔のタヒチ",
+    "ids": [
+      "tahiti_village_breadfruit_lane",
+      "tahitian_lagoon_veranda",
+      "tahitian_outrigger_beach"
+    ]
+  },
+  "Vintage Cuba": {
+    "ja": "昔のキューバ",
+    "ids": [
+      "old_havana_neighborhood_diner",
+      "havana_street_coffee_window",
+      "havana_shared_tenement_courtyard",
+      "havana_malecon_seawall",
+      "vinales_tobacco_curing_barn"
+    ]
+  },
+  "Asian night markets": {
+    "ja": "アジアの夜市",
+    "ids": [
+      "taiwan_night_market_food_lane",
+      "taiwan_roadside_betel_nut_kiosk",
+      "chiang_mai_night_bazaar_aisle"
+    ]
+  },
+  "Light and atmosphere": {
+    "ja": "光と大気の効果",
+    "ids": [
+      "aurora_snowfield",
+      "firefly_riverbank",
+      "night_bokeh_lights",
+      "long_exposure_intersection",
+      "stained_glass_light_on_stone",
+      "lattice_shadows_on_plaster",
+      "underwater_caustic_light",
+      "underwater_ink_plumes",
+      "red_confetti_award_stage"
+    ]
+  },
+  "Graphic and virtual worlds": {
+    "ja": "グラフィックと電脳世界",
+    "ids": [
+      "kaleidoscope_tunnel",
+      "glitch_fractured_city",
+      "blueprint_architecture",
+      "mathematics_chalkboard_wall",
+      "sculpted_woodblock_wave_sea",
+      "pixel_tile_storefront_street",
+      "faceted_mountain_valley",
+      "circuit_board_city",
+      "dark_network_city_passage",
+      "white_virtual_gateway_plaza",
+      "multilevel_data_interchange"
+    ]
+  },
+  "Surreal places": {
+    "ja": "不思議な空間",
+    "ids": [
+      "endless_outdoor_street",
+      "escalator_into_clouds",
+      "solitary_meadow_door",
+      "inverted_mirror_lake",
+      "whiteout_expanse",
+      "yellow_fluorescent_maze_rooms",
+      "vaporwave_atrium_mall"
+    ]
+  },
+  "Miniature and macro worlds": {
+    "ja": "ミニチュアとマクロ",
+    "ids": [
+      "european_dollhouse_kitchen",
+      "open_book_paper_valley",
+      "dewy_spiderweb_garden",
+      "frost_crystal_windowpane",
+      "underfloor_miniature_dwelling",
+      "sewing_drawer_miniature_room",
+      "moss_path_beneath_the_porch"
+    ]
+  },
+  "Local events and venues": {
+    "ja": "地域の催しと会場",
+    "ids": [
+      "showa_rooftop_event_platform",
+      "beach_contest_plywood_stage",
+      "poolside_contest_platform",
+      "neighborhood_hall_fashion_runway",
+      "shopping_arcade_singing_contest",
+      "community_hall_audition_room",
+      "local_produce_judging_tables",
+      "harbor_tournament_weigh_station",
+      "shopping_street_raffle_booth",
+      "danchi_open_air_cinema",
+      "temporary_stage_backstage_steps",
+      "athletics_call_tent",
+      "school_gym_calligraphy_exhibition",
+      "schoolyard_telescope_night"
+    ]
+  },
+  "Vintage holiday places": {
+    "ja": "昔の行楽地",
+    "ids": [
+      "showa_hotel_ping_pong_corner",
+      "seaside_swim_ring_rental_hut"
+    ]
+  },
+  "Film and sound production": {
+    "ja": "映画と音の制作現場",
+    "ids": [
+      "foley_sound_effects_room",
+      "old_cinema_projection_booth"
+    ]
+  },
+  "Neighborhood repair shops": {
+    "ja": "町の修理店",
+    "ids": [
+      "neighborhood_umbrella_repair_shop",
+      "geta_repair_shopfront"
+    ]
+  },
+  "Measurement and observation": {
+    "ja": "観測と計測",
+    "ids": [
+      "harbor_tide_gauge_hut",
+      "schoolyard_weather_screen"
+    ]
+  },
+  "Mobile services": {
+    "ja": "移動する施設",
+    "ids": [
+      "housing_estate_mobile_library",
+      "island_floating_grocery_boat"
+    ]
+  },
+  "Boat decks and cabins": {
+    "ja": "船の甲板と客室",
+    "ids": [
+      "inflatable_dinghy_interior",
+      "motor_cruiser_aft_deck",
+      "motor_cruiser_bow_saloon",
+      "squid_boat_under_fishing_lamps",
+      "inshore_fishing_skiff_bow",
+      "paddle_steamer_side_gallery",
+      "glass_bottom_boat_viewing_well",
+      "canal_narrowboat_stern_deck",
+      "ocean_liner_promenade_deck"
+    ]
+  },
+  "Vehicle viewpoints": {
+    "ja": "乗り物からの景色",
+    "ids": [
+      "double_decker_front_upper_seats",
+      "overnight_coach_independent_seats",
+      "covered_wagon_rear_opening",
+      "sightseeing_helicopter_rear_cabin",
+      "flying_boat_lake_hatch",
+      "tracked_snow_coach_interior",
+      "rickshaw_passenger_canopy_view",
+      "roller_coaster_passenger_row"
+    ]
+  },
+  "Deep sea exploration": {
+    "ja": "深海探査",
+    "ids": [
+      "research_submersible_hatch_interior",
+      "research_submersible_observation_port",
+      "research_submersible_over_seabed"
+    ]
+  },
+  "Antarctic stations": {
+    "ja": "南極の観測基地",
+    "ids": [
+      "syowa_polar_station_forecourt",
+      "syowa_polar_station_mess_hall"
+    ]
+  },
+  "Cinema lobbies": {
+    "ja": "映画館のロビー",
+    "ids": [
+      "multiplex_staffed_ticket_window",
+      "multiplex_concession_service_side"
+    ]
+  },
+  "Neighborhood courts": {
+    "ja": "街のスポーツコート",
+    "ids": [
+      "neighborhood_basketball_half_court",
+      "seaside_beach_volleyball_court"
+    ]
+  },
+  "Baseball grounds": {
+    "ja": "野球場",
+    "ids": [
+      "school_baseball_practice_bullpen",
+      "baseball_game_mound",
+      "baseball_home_plate_batter_boxes"
+    ]
+  },
+  "Sports venues": {
+    "ja": "スポーツ会場",
+    "ids": [
+      "long_jump_sand_pit",
+      "fencing_piste_hall",
+      "curling_house_at_ice_level",
+      "outdoor_diving_platform_pool",
+      "canoe_slalom_rapid_gates",
+      "rural_indoor_riding_arena",
+      "stadium_field_entrance_tunnel",
+      "ski_jump_landing_outrun"
+    ]
+  },
+  "Horse racing venues": {
+    "ja": "競馬場",
+    "ids": [
+      "racecourse_turf_starting_stalls",
+      "racecourse_finish_post_rail"
+    ]
+  },
+  "Motorsport circuits": {
+    "ja": "モータースポーツ",
+    "ids": [
+      "formula_car_pit_garage",
+      "road_racing_motorcycle_pit_box",
+      "formula_starting_grid_slot"
+    ]
+  }
+}

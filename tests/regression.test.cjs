@@ -268,3 +268,41 @@ test('initialization failures allow retry; overlapping init and script remount d
     assert.equal(p.after, originalHook); assert.equal(p.listeners.get('storage').length, 1);
     await p.load(); assert.equal(p.fetches, 2);
 });
+
+test('catalog reload reads new search tags, refreshes same-name thumbnails and preserves the draft', async () => {
+    const host = world().page();
+    await host.load();
+    const api = host.api;
+    const selected = api.state.presets.find(p => p.name === api.state.selectedName);
+    const oldUrl = api.thumbUrl(selected);
+    api.updateDraft('my edited prompt', null);
+    let loads = 0;
+    const replacement = { ...selected, id: 'steppe', searchTags: ['遊牧民', 'パオ', 'nomadic camp'] };
+    host.context.fetch = async (url, options) => {
+        assert.equal(options.cache, 'no-store');
+        loads++;
+        const data = url.endsWith('subcategories.json')
+            ? { Grassland: { ja: '草原', ids: ['steppe'] } }
+            : { presets: [replacement, { ...selected, id: 'extra', name: 'New scene' }] };
+        return { ok: true, json: async () => data };
+    };
+    const first = api.reloadPresets();
+    await Promise.all([first, api.reloadPresets()]);
+    assert.equal(loads, 2);
+    assert.equal(api.state.totalAvailable, 2);
+    assert.equal(api.state.draft, 'my edited prompt');
+    assert.notEqual(api.thumbUrl(replacement), oldUrl);
+    api.state.query = '草原　パオ';
+    api.state.drawerQuery = 'NOMADIC 遊牧民';
+    for (const drawer of [false, true]) assert.equal(api.filteredPresets({ drawer })[0].id, 'steppe');
+    for (const profile of ['natural-first','tags-first']) {
+        api.state.profile = profile;
+        assert.equal(api.buildPrompt(replacement), api.buildPrompt(selected));
+    }
+    const url = api.thumbUrl(replacement);
+    host.context.fetch = async () => ({ ok: true, json: async () => ({ presets: [] }) });
+    await api.reloadPresets();
+    assert.equal(api.thumbUrl(replacement), url);
+    assert.equal(api.state.presets.length, 2);
+    assert.equal(api.state.draft, 'my edited prompt');
+});

@@ -5,13 +5,13 @@
 <img width="1794" height="1567" alt="Clip_5" src="https://github.com/user-attachments/assets/c938bd29-9520-431f-8d1c-65bfc0061591" />
 
 
-An image-backed background prompt picker for Forge Neo and ReForge. **As of July 2026, it includes 592 background presets with preview images.** Browse visually, generate a model-aware prompt, edit it, and insert it into txt2img or img2img.
+An image-backed background prompt picker for Forge Neo and ReForge. **It includes 1,013 background presets with preview images.** Browse visually, generate a model-aware prompt, edit it, and insert it into txt2img or img2img.
 
-**v1.1.1** remembers the Background bar's **Enable** state. It starts off on first use. See the [release notes](RELEASE_NOTES.md). After updating, reload the original WebUI and reopen its picker tabs using the same browser profile and WebUI address to retain browser data.
+**v1.2.0** adds 421 backgrounds, searchable tags, subcategories, sorting, hover previews and a catalog reload button. See the [release notes](RELEASE_NOTES.md). After updating, reload the original WebUI and reopen its picker tabs using the same browser profile and WebUI address to retain browser data.
 
 ## Features
 
-- Browse 592 backgrounds by image, search, category, favorites, or recent use
+- Browse 1,013 backgrounds by image, search, category, favorites, or recent use
 - Jump directly to any page with the page slider or page number
 - Full tab, compact prompt bars, and a resizable side panel
 - Adjustable thumbnail size
@@ -23,7 +23,7 @@ An image-backed background prompt picker for Forge Neo and ReForge. **As of July
 ## Usage
 
 1. Open the **Background Prompter** tab or select **Choose in side panel** under txt2img or img2img.
-2. Search for and select a background.
+2. Search for a background by name or tag, or filter by subcategory. Use the sort menu for newly added presets and the reload icon to refresh the catalog and previews.
 3. Adjust the output format, optionally select **Photo** or **Anime** under **Style Boost**, or edit the generated prompt.
 4. With the outer **Enable** on, Forge Neo includes the selected background in the submitted positive prompt on Generate while keeping the prompt field unchanged. Use **Insert** to keep an editable background in the field. You can combine it with the current selection, and Generate skips identical text already in the field.
 
@@ -90,13 +90,13 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 <img width="1794" height="1567" alt="Background Prompterの画面" src="https://github.com/user-attachments/assets/6bc0656e-0ede-4fdc-9b6b-3f36ca233c00" />
 
 
-Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**2026年7月現在、画像付き背景プリセットを592件収録**しています。背景を画像で選び、モデルに合わせたプロンプトを編集してtxt2img / img2imgへ挿入できます。
+Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**画像付き背景プリセットを1,013件収録**しています。背景を画像で選び、モデルに合わせたプロンプトを編集してtxt2img / img2imgへ挿入できます。
 
-**v1.1.1** では、Backgroundバーの **Enable** の状態を記憶します。初回はOFFです。[更新内容](RELEASE_NOTES.md)。ブラウザー内のデータを引き継ぐには、更新後も同じプロファイルとWebUIアドレスを使い、元のWebUIを再読み込みしてピッカーを開き直してください。
+**v1.2.0** では、背景421件と、検索タグ、サブカテゴリー、並べ替え、原寸プレビュー、プリセット再読み込みを追加しました。[更新内容](RELEASE_NOTES.md)。ブラウザー内のデータを引き継ぐには、更新後も同じプロファイルとWebUIアドレスを使い、元のWebUIを再読み込みしてピッカーを開き直してください。
 
 ### 主な機能
 
-- 592件を画像、検索、カテゴリ、お気に入り、最近使用から選択
+- 1,013件を画像、検索、カテゴリ、お気に入り、最近使用から選択
 - 上下のページスライダーまたはページ番号入力で任意ページへ直接移動
 - 通常タブ、コンパクトバー、幅を変えられるサイドパネルに対応
 - サムネイルサイズを調整可能
@@ -188,6 +188,6 @@ On PowerShell, set `$env:CHROME_BIN` first. No npm install is needed (Node 24 or
 
 ## License / ライセンス
 
-The maintainer-authored code, documentation, presets, and all 592 bundled preview images are licensed under the [MIT License](LICENSE), to the extent of rights held. The maintainer reports creating the presets and images with GPT tools; the exact model names are unspecified. See [NOTICE.md](NOTICE.md) for scope and third-party rights.
+The maintainer-authored code, documentation, presets, and the bundled preview images are licensed under the [MIT License](LICENSE), to the extent of rights held. The maintainer reports creating the presets and images with GPT tools; the exact model names are unspecified. See [NOTICE.md](NOTICE.md) for scope and third-party rights.
 
-作者のコード・文書・プリセット・同梱サムネイル592枚は、作者が保有する権利の範囲でMIT対象です。プリセットと画像は本人がGPTを用いて作成したとの申告によります。生成モデルの正式名は未確認です。第三者の既存権利は変更しません。
+作者のコード・文書・プリセット・同梱サムネイルは、作者が保有する権利の範囲でMIT対象です。プリセットと画像は本人がGPTを用いて作成したとの申告によります。生成モデルの正式名は未確認です。第三者の既存権利は変更しません。

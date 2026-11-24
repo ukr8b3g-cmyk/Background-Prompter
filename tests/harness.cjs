@@ -11,7 +11,7 @@ const presets = [
 ];
 // Only expose closure variables at the end. Handlers and hooks run unchanged.
 const instrumented = source.replace(/\}\)\(\);\s*$/, `globalThis.__test = {
-    state, instanceId, hostSessionId, scope, initialize, handleBroadcast,
+    state, instanceId, hostSessionId, scope, initialize, handleBroadcast, reloadPresets, thumbUrl, filteredPresets,
     broadcastState, updateDraft, requestInsert, insertIntoPrompt, openStandalone,
     reconnectHost, resolvedProfile, setGeneratedDraft, persistState,
     toggleFavorite, addRecent, handleInput, loadStoredState, setEnabled, changeStyleBoost, setStyleBoostEnabled, buildPrompt,
@@ -112,7 +112,10 @@ function world(mode = 'channel') {
             Event: class { constructor(type) { this.type = type; } },
             onUiLoaded: callback => { loadCallbacks.push(callback); },
             onAfterUiUpdate: callback => { p.after = callback; },
-            fetch: async () => {
+            fetch: async url => {
+                if (url.endsWith('/data/subcategories.json')) {
+                    return { ok: true, json: async () => require('../data/subcategories.json') };
+                }
                 p.fetches++;
                 if (fail-- > 0) throw new Error('offline fixture');
                 return { ok: true, json: async () => ({ presets, total_available: presets.length }) };

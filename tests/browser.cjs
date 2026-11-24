@@ -47,8 +47,20 @@ async function connect(url) {
 let failureFetches = 0;
 const server = http.createServer((request, response) => {
     const url = new URL(request.url, 'http://localhost');
+    if (url.pathname.endsWith('/data/subcategories.json')) {
+        response.setHeader('Content-Type', 'application/json');
+        response.end(JSON.stringify(require('../data/subcategories.json'))); return;
+    }
+    if (url.pathname.startsWith('/catalog/') && url.pathname.endsWith('/data/background_presets.json')) {
+        response.setHeader('Content-Type', 'application/json');
+        response.end(JSON.stringify(require('../data/background_presets.json'))); return;
+    }
+    if (url.pathname.startsWith('/catalog/') && url.pathname.includes('/assets/thumbnails/')) {
+        response.setHeader('Content-Type', 'image/webp');
+        response.end(fs.readFileSync(path.join(__dirname, '../assets/thumbnails', path.basename(url.pathname)))); return;
+    }
     if (url.pathname.endsWith('/javascript/krea2_backgrounds.js')) {
-        response.setHeader('Content-Type', 'text/javascript'); response.end(instrumented); return;
+        response.setHeader('Content-Type', 'text/javascript; charset=utf-8'); response.end(instrumented); return;
     }
     if (url.pathname.endsWith('/data/background_presets.json')) {
         if (url.pathname.startsWith('/failure/') && ++failureFetches <= 2) {
@@ -65,7 +77,7 @@ const server = http.createServer((request, response) => {
     }
     const preset = url.searchParams.get('preset') || 'xl';
     const base = url.pathname.replace(/\/$/, '');
-    response.setHeader('Content-Type', 'text/html');
+    response.setHeader('Content-Type', 'text/html; charset=utf-8');
     response.end(`<!doctype html><html><head><link rel="stylesheet" href="${base}/extension/style.css"></head><body>
     <div id="tabs"><div class="tab-nav"><button id="bg-tab" role="tab" class="selected" aria-selected="true" aria-controls="tab_background_prompter">Background Prompter</button></div>
     <div id="tab_background_prompter" aria-labelledby="bg-tab"><div id="k2bg-app"></div></div></div>
@@ -75,7 +87,7 @@ const server = http.createServer((request, response) => {
     <div id="img2img_prompt_container"><div id="img2img_prompt"><textarea></textarea></div></div>
     <script>
     ${url.searchParams.get('mode') === 'storage' ? 'delete window.BroadcastChannel;' : ''}
-    window.opts = { localization: 'None' };
+    window.opts = { localization: '${url.searchParams.get('lang') === 'ja' ? 'ja' : 'None'}' };
     window.fixtureRoot = document;
     ${url.searchParams.get('root') === 'shadow' ? `const host = document.createElement('div'); document.body.prepend(host); fixtureRoot = host.attachShadow({mode:'open'}); [...document.body.children].filter(node => node !== host && node.tagName !== 'SCRIPT').forEach(node => fixtureRoot.appendChild(node));` : ''}
     window.gradioApp = () => fixtureRoot;
@@ -145,6 +157,9 @@ async function main() {
             const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
             const tab = {
                 targetId,
+                viewport(width, height) {
+                    return cdp.send('Emulation.setDeviceMetricsOverride', {width, height, deviceScaleFactor:1, mobile:false}, sessionId);
+                },
                 async eval(expression) {
                     const result = await cdp.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true, userGesture: true }, sessionId);
                     if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
@@ -305,6 +320,39 @@ async function main() {
         assert.deepEqual(await failure.eval('fixtureErrors'), []);
         await cdp.send('Target.disposeBrowserContext', { browserContextId });
         console.log('PASS Chromium initialization: two failed fetches, visible retry, successful mount, duplicate script guard, DOM remount, single action');
+        const catalog = await create(`${origin}/catalog/?lang=ja`, undefined);
+        await catalog.viewport(1680,1100);
+        await catalog.ready();
+        await catalog.eval(`const group = document.querySelector('[data-k2bg-action="group"]');
+            group.value = 'Japanese / Edo period'; group.dispatchEvent(new Event('change', {bubbles:true}));`);
+        assert.equal(await catalog.eval('group.selectedOptions[0].textContent'), '日本 › 江戸時代');
+        await catalog.expect(`document.querySelector('.k2bg-card-select[data-name="Edo Nagaya"]') && !document.querySelector('.k2bg-card-select[data-name="Showa Kitchen"]')`);
+        await catalog.eval(`const card = document.querySelector('.k2bg-card-select[data-name="Edo Nagaya"]');
+            card.dispatchEvent(new PointerEvent('pointerover', {bubbles:true, pointerType:'mouse'}));`);
+        await catalog.expect(`document.querySelector('.k2bg-original-preview:popover-open')?.naturalWidth > 0`);
+        assert.equal(await catalog.eval(`(() => {
+            const img = card.querySelector('.k2bg-original-preview'), box = img.getBoundingClientRect();
+            const scale = Math.min(1,(innerWidth-16)/img.naturalWidth,(innerHeight-16)/img.naturalHeight);
+            return Math.abs(box.width-img.naturalWidth*scale)<1 && Math.abs(box.height-img.naturalHeight*scale)<1;
+        })()`), true, 'preview shows intrinsic size, limited by viewport');
+        await catalog.eval(`card.dispatchEvent(new PointerEvent('pointerout',{bubbles:true}))`);
+        await catalog.expect(`!document.querySelector('.k2bg-original-preview')`);
+        await catalog.viewport(390,650);
+        await catalog.click('[data-k2bg-action="drawer"][data-target="txt2img"]');
+        await catalog.eval(`const drawerGroup = document.querySelector('[data-k2bg-action="drawer-group"]');
+            drawerGroup.value = 'Outdoor / Nature'; drawerGroup.dispatchEvent(new Event('change',{bubbles:true}));`);
+        await catalog.expect(`document.querySelector('[data-k2bg-drawer-grid] [data-name="Forest Path"]')`);
+        await catalog.eval(`const drawerCard = document.querySelector('[data-k2bg-drawer-grid] .k2bg-card-select');
+            drawerCard.focus(); drawerCard.dispatchEvent(new PointerEvent('pointerover',{bubbles:true,pointerType:'mouse'}));`);
+        await catalog.expect(`drawerCard.querySelector('.k2bg-original-preview:popover-open')?.naturalWidth > 0`);
+        assert.equal(await catalog.eval(`(() => {
+            const r = drawerCard.querySelector('.k2bg-original-preview').getBoundingClientRect();
+            return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight;
+        })()`), true, 'drawer preview fits narrow viewport');
+        await catalog.eval(`drawerCard.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}))`);
+        await catalog.expect(`!document.querySelector('.k2bg-original-preview') && __test.state.drawerOpen`);
+        await catalog.close();
+        console.log('PASS Chromium subcategory filter and intrinsic-size WebP preview');
         const shadow = await create(`${origin}/shadow/?root=shadow`, undefined);
         await shadow.ready();
         await shadow.eval('__test.updateDraft("shadow draft", null); fixtureRoot.querySelector("[data-k2bg-editor]").focus(); fixtureRoot.querySelector("[data-k2bg-editor]").setSelectionRange(2, 5); fixtureRoot.querySelector(\'[data-k2bg-action="favorite"]\').click()');

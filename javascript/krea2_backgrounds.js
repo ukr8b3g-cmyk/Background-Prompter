@@ -48,10 +48,22 @@
         en: {
             enable: "Enable",
             disabled: "Insertion is disabled by Enable on the original WebUI bar. The selected background and draft are kept.",
-            appSubtitle: "592 background presets · July 2026",
+            appSubtitle: "{count} background presets",
             standalone: "Open in browser tab",
             search: "Search",
-            searchPlaceholder: "Search backgrounds...",
+            reloadPresets: "Reload presets",
+            sortBy: "Sort by",
+            sortDefault: "Added (oldest first)",
+            sortRecent: "Recently used",
+            sortNewest: "Added (newest first)",
+            sortName: "Name (A–Z)",
+            sortNameReverse: "Name (Z–A)",
+            sortCategory: "Category",
+            reloadingPresets: "Reloading presets…",
+            presetsReloaded: "Presets and previews updated",
+            reloadFailed: "Reload failed, current presets are still available",
+            searchTags: "Search tags",
+            searchPlaceholder: "Search backgrounds or tags…",
             category: "Category",
             all: "All",
             favorites: "Favorites",
@@ -125,10 +137,22 @@
         ja: {
             enable: "有効",
             disabled: "元のWebUIの外側バーで有効がOFFになっています。選択中の背景と編集内容は保持しています。",
-            appSubtitle: "背景プリセット592件・2026年7月現在",
+            appSubtitle: "背景プリセット{count}件",
             standalone: "別ブラウザータブで開く",
             search: "検索",
-            searchPlaceholder: "背景を検索...",
+            reloadPresets: "プリセット再読み込み",
+            sortBy: "並べ替え",
+            sortDefault: "登録順（古い順）",
+            sortRecent: "最近使った順",
+            sortNewest: "登録順（新しい順）",
+            sortName: "名前（A–Z）",
+            sortNameReverse: "名前（Z–A）",
+            sortCategory: "カテゴリー順",
+            reloadingPresets: "再読み込み中…",
+            presetsReloaded: "プリセットと画像を更新しました",
+            reloadFailed: "再読み込みに失敗しました。現在の一覧を引き続き使えます",
+            searchTags: "検索タグ",
+            searchPlaceholder: "背景名・タグで検索",
             category: "カテゴリ",
             all: "すべて",
             favorites: "お気に入り",
@@ -211,11 +235,15 @@
     let hasSavedDraft = false;
     let storedStateLoaded = false;
     let initializing = false;
+    let reloading = false;
+    let thumbnailRevision = "";
     let initializationError = null;
     let connectRequestId = "";
     let connectTimer = null;
     let connectionStatus = "unlinked";
     const connectCandidates = new Map();
+    let subcategoryById = new Map();
+    let subcategoryLabels = {};
     // Bounded deduplication only covers transport retries of the same request.
     // Explicit new insertions still create duplicates, as documented.
     const insertResults = new Map();
@@ -225,7 +253,7 @@
         enabled: false,
         enabledRevision: { counter:0, actor:'legacy' },
         presets: [],
-        totalAvailable: 592,
+        totalAvailable: 0,
         selectedName: "",
         profile: "auto",
         styleBoost: "none",
@@ -240,6 +268,7 @@
         view: "all",
         page: 0,
         countMode: "40",
+        sortMode: "sortDefault",
         customCount: 40,
         cardSize: 176,
         drawerOpen: false,
@@ -478,6 +507,7 @@
             state.styleBoostLast = state.styleBoost !== 'none' ? state.styleBoost : ['photo','anime'].includes(saved.styleBoostLast) ? saved.styleBoostLast : 'photo';
             state.drawerGroup = saved.drawerGroup || "All categories";
             if (["40", "80", "custom", "all"].includes(saved.countMode)) state.countMode = saved.countMode;
+            if (SORT_MODES.includes(saved.sortMode)) state.sortMode = saved.sortMode;
             if (Number.isSafeInteger(saved.customCount) && saved.customCount > 0) state.customCount = saved.customCount;
             state.cardSize = clamp(typeof saved.cardSize === "number" ? saved.cardSize : NaN, 148, 228, 176);
             state.drawerCardSize = Number(saved.settingsVersion) >= SETTINGS_VERSION
@@ -523,6 +553,7 @@
                 drawerGroup: state.drawerGroup,
                 cardSize: state.cardSize,
                 countMode: state.countMode,
+                sortMode: state.sortMode,
                 customCount: state.customCount,
                 drawerCardSize: state.drawerCardSize,
                 drawerWidth: state.drawerWidth,
@@ -590,10 +621,10 @@
         const tags = tagValues.map((tag) => tag.replaceAll("_", " ")).join(", ");
         const natural = neutralizePromptText(preset.text);
         const tagsFirst = resolvedProfile() === "tags-first";
-        const supportingNatural = tagsFirst ? supportingNaturalText(natural, tagValues) : "";
+        const supportingNatural = tagsFirst ? supportingNaturalText(natural, tagValues, preset.promptFormat) : "";
         const supplementalTags = tagsFirst ? "" : supplementalTagsForNatural(tagValues, natural);
         const parts = tagsFirst ? [tags, supportingNatural] : [natural, supplementalTags];
-        const separator = tagsFirst ? ",\n" : "\n";
+        const separator = preset.promptFormat === "comma" ? ", " : (tagsFirst ? ",\n" : "\n");
         const base = parts.filter(Boolean).join(separator);
         const boost = STYLE_BOOST_TEXT[state.styleBoost] || "";
         return boost && !base.toLowerCase().includes(boost.toLowerCase())
@@ -665,7 +696,7 @@
         }) || [];
     }
 
-    function supportingNaturalText(natural, tagValues) {
+    function supportingNaturalText(natural, tagValues, promptFormat) {
         const tagWords = new Set(promptWords(tagValues.join(" ")));
         const stopWords = new Set(["a", "an", "the", "of", "and", "with", "in", "on", "at", "to", "for", "from", "as", "its", "into", "only"]);
         const spatial = /\b(?:left|right|behind|beyond|below|above|between|under|over|across|along|around|through|toward|towards|near|nearest|far|center|central|middle|side|foreground|background|distance|depth|perspective|row|facing|receding|leading|framing|placed|visible|view from|open space)\b/i;
@@ -685,6 +716,7 @@
         });
         if (!clauses.length) return "";
         const result = clauses.join(", ");
+        if (promptFormat === "comma") return result;
         return `${result.charAt(0).toUpperCase()}${result.slice(1)}.`;
     }
 
@@ -813,35 +845,66 @@
         refreshAll();
     }
 
+    function normalizeSearch(value) {
+        return String(value || "").normalize("NFKC").toLowerCase().replace(/[_-]+/g, " ");
+    }
+
+    function visibleSearchTags(preset) {
+        const tags = preset.searchTags || [];
+        const localized = tags.filter(tag => /[^\x00-\x7F]/.test(tag) === (uiLanguage === "ja"));
+        return localized.length ? localized : tags;
+    }
+
+    const SORT_MODES = ["sortDefault", "sortNewest", "sortName", "sortNameReverse", "sortCategory"];
+
     function filteredPresets({ drawer = false } = {}) {
-        const query = (drawer ? state.drawerQuery : state.query).trim().toLowerCase();
+        const words = normalizeSearch(drawer ? state.drawerQuery : state.query).trim().split(/\s+/).filter(Boolean);
         const view = drawer ? state.drawerView : state.view;
-        return state.presets.filter((item) => {
-            const matchesQuery = !query || `${item.name} ${item.group} ${item.text} ${item.tags}`.toLowerCase().includes(query);
+        const items = state.presets.filter((item) => {
+            if (words.length) {
+                const child = subcategoryById.get(item.id);
+                const searchable = normalizeSearch([item.name, item.group, groupLabel(item.group), child, subcategoryLabels[child]?.ja,
+                    item.text, item.tags, ...(item.searchTags || [])].join(" "));
+                if (!words.every(word => searchable.includes(word))) return false;
+            }
             const selectedGroup = drawer ? state.drawerGroup : state.group;
-            const matchesGroup = selectedGroup === "All categories" || item.group === selectedGroup;
+            const matchesGroup = selectedGroup === "All categories" || item.group === selectedGroup
+                || categoryPath(item) === selectedGroup;
             const matchesView = view === "all"
                 || (view === "favorites" && state.favorites.has(item.name))
                 || (view === "recent" && state.recent.includes(item.name));
-            return matchesQuery && matchesGroup && matchesView;
-        }).sort((a, b) => {
-            if (view !== "recent") return 0;
-            return state.recent.indexOf(a.name) - state.recent.indexOf(b.name);
+            return matchesGroup && matchesView;
         });
+        if (state.sortMode === "sortDefault") {
+            return view === "recent" ? items.sort((a, b) => state.recent.indexOf(a.name) - state.recent.indexOf(b.name)) : items;
+        }
+        if (state.sortMode === "sortNewest") return items.reverse();
+        const compare = new Intl.Collator(uiLanguage, { numeric: true, sensitivity: "base" }).compare;
+        if (state.sortMode === "sortCategory") {
+            const subLabel = item => {
+                const sub = subcategoryById.get(item.id);
+                return subcategoryLabels[sub]?.[uiLanguage] || sub || "";
+            };
+            return items.sort((a, b) => compare(groupLabel(a.group), groupLabel(b.group))
+                || compare(subLabel(a), subLabel(b)) || compare(a.name, b.name));
+        }
+        return items.sort((a, b) => state.sortMode === "sortNameReverse" ? compare(b.name, a.name) : compare(a.name, b.name));
     }
 
     function thumbUrl(preset) {
-        return assetUrl(`assets/thumbnails/${encodeURIComponent(preset.thumbnail)}`);
+        return assetUrl(`assets/thumbnails/${encodeURIComponent(preset.thumbnail)}${thumbnailRevision ? "?v=" + thumbnailRevision : ""}`);
     }
 
     function cardMarkup(preset, compact = false) {
         const selected = preset.name === state.selectedName;
         const favorite = state.favorites.has(preset.name);
+        const category = compact ? state.drawerGroup : state.group;
+        const label = category.includes(" / ") ? visibleSearchTags(preset).join(" · ") : "";
         return `
             <article class="k2bg-card${selected ? " is-selected" : ""}${compact ? " is-compact" : ""}">
                 <button type="button" class="k2bg-card-select" data-k2bg-action="select" data-name="${escapeHtml(preset.name)}" aria-pressed="${selected}">
                     <img src="${thumbUrl(preset)}" alt="" loading="lazy">
-                    <span class="k2bg-card-copy"><strong>${escapeHtml(preset.name)}</strong><small>${escapeHtml(groupLabel(preset.group))}</small></span>
+                    <span class="k2bg-card-copy"><strong>${escapeHtml(preset.name)}</strong><small title="${escapeHtml(label)}">${escapeHtml(label || groupLabel(preset.group))}</small></span>
                 </button>
                 <button type="button" class="k2bg-favorite" data-k2bg-action="favorite" data-name="${escapeHtml(preset.name)}" aria-pressed="${favorite}">${favorite ? t("favorited") : t("favorite")}</button>
             </article>`;
@@ -920,6 +983,7 @@
                 <div><span>${t("selectedBackground")}</span><h2>${escapeHtml(preset.name)}</h2></div>
                 <span class="k2bg-dirty${state.dirty ? " is-dirty" : ""}" data-k2bg-dirty>${state.dirty ? t("edited") : t("presetOutput")}</span>
             </div>
+            ${visibleSearchTags(preset).length ? `<div class="k2bg-search-tags"><strong>${t("searchTags")}</strong> ${visibleSearchTags(preset).map(escapeHtml).join(" · ")}</div>` : ""}
             ${compact ? "" : `<img class="k2bg-detail-image" src="${thumbUrl(preset)}" alt="">`}
             <label class="k2bg-field">
                 <span>${t("outputFormat")}</span>
@@ -933,8 +997,72 @@
             <p class="k2bg-notice" data-k2bg-notice${state.notice ? "" : " hidden"}>${escapeHtml(state.notice)}</p>`;
     }
 
-    function groups() {
-        return ["All categories", ...new Set(state.presets.map((item) => item.group))];
+    function categoryPath(item) {
+        const sub = subcategoryById.get(item.id);
+        return sub ? `${item.group} / ${sub}` : item.group;
+    }
+
+    function categoryOptions(selected) {
+        const option = (key, label) => `<option value="${escapeHtml(key)}"${key === selected ? " selected" : ""}>${escapeHtml(label)}</option>`;
+        const tree = new Map();
+        for (const preset of state.presets) {
+            if (!tree.has(preset.group)) tree.set(preset.group, new Set());
+            const sub = subcategoryById.get(preset.id);
+            if (sub) tree.get(preset.group).add(sub);
+        }
+        let html = option("All categories", groupLabel("All categories"));
+        for (const [group, children] of tree) {
+            const label = groupLabel(group);
+            html += option(group, label);
+            for (const sub of children) {
+                const childLabel = subcategoryLabels[sub]?.[uiLanguage] || sub;
+                html += option(`${group} / ${sub}`, `${label} › ${childLabel}`);
+            }
+        }
+        return html;
+    }
+
+    function bindCardPreview(host) {
+        let timer, preview, active;
+        function hide() {
+            window.clearTimeout(timer);
+            preview?.remove();
+            preview = active = null;
+        }
+        function show(event) {
+            const card = event.target.closest?.(".k2bg-card-select");
+            if (!card || active === card || event.pointerType === "touch") return;
+            if (event.type === "focusin" && !card.matches(":focus-visible")) return;
+            hide();
+            active = card;
+            timer = window.setTimeout(() => {
+                if (!card.isConnected || !card.getClientRects().length) return hide();
+                preview = document.createElement("img");
+                preview.className = "k2bg-original-preview";
+                preview.alt = "";
+                preview.setAttribute("popover", "manual");
+                preview.src = card.querySelector("img").src;
+                const rect = card.getBoundingClientRect();
+                preview.style[rect.left + rect.width / 2 < window.innerWidth / 2 ? "right" : "left"] = "8px";
+                card.appendChild(preview);
+                preview.showPopover?.();
+            }, 300);
+        }
+        function leave(event) {
+            if (active && !active.contains(event.relatedTarget)) hide();
+        }
+        host.addEventListener("pointerover", show);
+        host.addEventListener("pointerout", leave);
+        host.addEventListener("focusin", show);
+        host.addEventListener("focusout", leave);
+        host.addEventListener("click", hide, true);
+        host.addEventListener("scroll", hide, true);
+        host.addEventListener("keydown", event => {
+            if (event.key === "Escape" && active) {
+                hide();
+                event.stopPropagation();
+            }
+        });
     }
 
     function mountFullApp() {
@@ -950,7 +1078,7 @@
             <section class="k2bg-shell">
                 ${isStandalone ? `<p class="k2bg-notice" data-k2bg-connection role="status">${escapeHtml(t(connectionStatus))}</p>` : ""}
                 <header class="k2bg-titlebar">
-                    <div class="k2bg-titlecopy"><h1>${APP_TITLE}</h1><span>${t("appSubtitle")}</span></div>
+                    <div class="k2bg-titlecopy"><h1>${APP_TITLE}</h1><span data-k2bg-subtitle>${t("appSubtitle", { count: state.totalAvailable })}</span></div>
                     <div class="k2bg-titlebar-controls">
                         <div class="k2bg-scope-controls">${styleBoostMarkup()}</div>
                         <div class="k2bg-top-actions k2bg-titlebar-actions">
@@ -978,10 +1106,11 @@
 
         arrangeLibraryToolbar(mount.querySelector('.k2bg-toolbar'));
         const category = mount.querySelector('[data-k2bg-action="group"]');
-        category.innerHTML = groups().map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(groupLabel(item))}</option>`).join("");
+        category.innerHTML = categoryOptions(state.group);
         category.value = state.group;
         mount.querySelector('[data-k2bg-action="search"]').value = state.query;
         if (mount.dataset.listenersReady !== "true") {
+            bindCardPreview(mount.querySelector(".k2bg-shell"));
             mount.addEventListener("click", handleAction);
             mount.addEventListener("input", handleInput);
             mount.addEventListener("change", handleChange);
@@ -1010,6 +1139,7 @@
                </nav>`
             : "";
         mount.style.setProperty("--k2bg-card-min", `${state.cardSize}px`);
+        mount.querySelector("[data-k2bg-subtitle]").textContent = t("appSubtitle", { count: state.totalAvailable });
         mount.querySelector("[data-k2bg-count]").textContent = `${filtered.length} / ${state.totalAvailable}`;
         mount.querySelectorAll('[data-k2bg-action="view"]').forEach((button) => button.classList.toggle("is-active", button.dataset.view === state.view));
         refreshStyleBoostControls();
@@ -1066,6 +1196,7 @@
         host = document.createElement("div");
         host.id = DRAWER_ID;
         host.className = "k2bg-drawer-host";
+        bindCardPreview(host);
         host.hidden = true;
         host.addEventListener("click", handleAction);
         host.addEventListener("input", handleInput);
@@ -1176,7 +1307,7 @@
                 </div>
                 <div class="k2bg-drawer-toolbar">
                     <label class="k2bg-search"><span>${t("search")}</span><input type="search" data-k2bg-action="drawer-search" value="${escapeHtml(state.drawerQuery)}" placeholder="${t("drawerSearchPlaceholder")}" autocomplete="off"></label>
-                    <label class="k2bg-field"><span>${t("category")}</span><select data-k2bg-action="drawer-group" aria-label="${t("drawerCategory")}">${groups().map((item) => `<option value="${escapeHtml(item)}"${item === state.drawerGroup ? " selected" : ""}>${escapeHtml(groupLabel(item))}</option>`).join("")}</select></label>
+                    <label class="k2bg-field"><span>${t("category")}</span><select data-k2bg-action="drawer-group" aria-label="${t("drawerCategory")}">${categoryOptions(state.drawerGroup)}</select></label>
                     <div class="k2bg-segments">
                         <button type="button" data-k2bg-action="drawer-view" data-view="all">${t("all")}</button>
                         <button type="button" data-k2bg-action="drawer-view" data-view="recent">${t("recent")}</button>
@@ -1201,6 +1332,7 @@
         let count=toolbar.querySelector('[data-k2bg-count]');
         if(drawer) { count=document.createElement('span'); count.className='k2bg-count'; count.setAttribute('data-k2bg-library-count',''); }
         row.append(toolbar.querySelector('.k2bg-size'),count); toolbar.append(row);
+        const reloadLabel = t(reloading ? "reloadingPresets" : "reloadPresets");
         row.insertAdjacentHTML("afterend", `<div class="k2bg-library-size-row">
             <label><span>${t("displayCount")}</span>
                 <select data-k2bg-action="count-mode">
@@ -1210,6 +1342,18 @@
             </label>
             <input type="range" min="1" max="${state.presets.length}" step="1" data-k2bg-action="custom-count" aria-label="${t("displayCount")}">
             <output data-k2bg-custom-value></output>
+            <label><span>${t("sortBy")}</span>
+                <select data-k2bg-action="sort-mode">
+                    ${SORT_MODES.map(key => `<option value="${key}">${t(key)}</option>`).join("")}
+                </select>
+            </label>
+            <button type="button" class="k2bg-secondary k2bg-reload" data-k2bg-action="reload-presets"
+                title="${reloadLabel}" aria-label="${reloadLabel}"${reloading ? " disabled" : ""}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M20 4v6h-6 M20 10a8 8 0 1 0-.9 6"/>
+                </svg>
+            </button>
         </div>`);
     }
 
@@ -1223,9 +1367,14 @@
         const mode = root.querySelector('[data-k2bg-action="count-mode"]');
         if (!mode) return;
         mode.value = state.countMode;
+        const sort = root.querySelector('[data-k2bg-action="sort-mode"]');
+        sort.value = state.sortMode;
+        const view = root.classList.contains("k2bg-drawer-host") ? state.drawerView : state.view;
+        sort.options[0].textContent = t(view === "recent" ? "sortRecent" : "sortDefault");
         const slider = root.querySelector('[data-k2bg-action="custom-count"]');
         const output = root.querySelector('[data-k2bg-custom-value]');
         slider.hidden = output.hidden = state.countMode !== "custom";
+        slider.max = state.presets.length;
         slider.value = state.customCount;
         output.value = slider.value;
     }
@@ -1423,6 +1572,7 @@
         const button = event.target.closest("[data-k2bg-action]");
         if (!button || ["INPUT", "SELECT", "TEXTAREA"].includes(button.tagName)) return;
         const action = button.dataset.k2bgAction;
+        if (action === "reload-presets") return reloadPresets();
         if (action === "select") selectPreset(button.dataset.name);
         else if (action === "favorite") toggleFavorite(button.dataset.name);
         else if (action === "view") { state.view = button.dataset.view; state.page = 0; refreshFullApp(); }
@@ -1468,6 +1618,14 @@
         else if (action === 'boost-enabled') setStyleBoostEnabled(event.target.checked);
         else if (action === "group") { state.group = event.target.value; state.page = 0; refreshFullApp(); }
         else if (action === "drawer-group") { state.drawerGroup = event.target.value; state.drawerLimit = displayCount(); persistState(); renderDrawerGrid(); }
+        else if (action === "sort-mode") {
+            state.sortMode = event.target.value;
+            state.page = 0;
+            state.drawerLimit = displayCount();
+            persistState();
+            refreshFullApp();
+            if (state.drawerOpen) renderDrawerGrid();
+        }
         else if (action === "count-mode" || action === "custom-count") {
             const first = state.page * displayCount();
             if (action === "count-mode") state.countMode = event.target.value;
@@ -1523,7 +1681,9 @@
         const sameSession = Boolean(hostSessionId && message.session === hostSessionId);
         // Favorites/recent are shared within this base path. Editing and model
         // metadata belong only to a host and the pickers it opened.
-        if (message.type === "shared-operation") {
+        if (message.type === "catalog-reloaded" && state.ready) {
+            reloadPresets(false);
+        } else if (message.type === "shared-operation") {
             receiveSharedOperation(message.operation);
         } else if (message.type === "enabled" && sameSession && typeof message.enabled === "boolean") {
             if(!mergeEnabled(message.enabled,message.enabledRevision))return;
@@ -1626,28 +1786,79 @@
         }, 1800);
     }
 
+    async function readCatalogFile(name) {
+        const response = await fetch(assetUrl(`data/${name}.json`), { cache: "no-store" });
+        if (!response.ok) throw new Error(`${name}: ${response.status}`);
+        return response.json();
+    }
+
     async function loadPresets() {
         extensionBase = findExtensionBase();
-        const response = await fetch(assetUrl("data/background_presets.json"), { cache: "no-store" });
-        if (!response.ok) throw new Error(`Preset request failed: ${response.status}`);
-        const payload = await response.json();
-        state.presets = Array.isArray(payload.presets) ? payload.presets : [];
-        state.totalAvailable = Number(payload.total_available) || state.presets.length;
-        if (!state.presets.length) throw new Error("No background presets were loaded");
-        state.customCount = Math.min(state.customCount, state.presets.length);
-        if (!state.presets.some((item) => item.name === state.selectedName)) {
-            hasSavedDraft = false;
-            state.selectedName = state.presets[3]?.name || state.presets[0].name;
+        const [payload, labels] = await Promise.all([readCatalogFile("background_presets"), readCatalogFile("subcategories")]);
+        const presets = payload.presets;
+        if (!Array.isArray(presets) || !presets.length || presets.some(p => !p || typeof p.name !== "string" || !p.name ||
+            typeof p.group !== "string" || (p.searchTags !== undefined && (!Array.isArray(p.searchTags) || p.searchTags.some(tag => typeof tag !== "string"))))) {
+            throw new Error("Invalid preset catalog");
         }
-        addRecent(state.selectedName);
+        const categories = new Map();
+        for (const [name, value] of Object.entries(labels)) {
+            if (!Array.isArray(value.ids)) throw new Error("Invalid subcategory");
+            for (const id of value.ids) categories.set(id, name);
+        }
+        const previous = selectedPreset();
+        state.presets = presets;
+        state.totalAvailable = Number(payload.total_available) || presets.length;
+        subcategoryLabels = labels;
+        subcategoryById = categories;
+        state.customCount = Math.min(state.customCount, presets.length);
+        if (!presets.some(item => item.name === state.selectedName)) {
+            hasSavedDraft = false;
+            const renamed = previous?.id && presets.find(item => item.id === previous.id);
+            state.selectedName = (renamed || presets[3] || presets[0]).name;
+        }
+        if (!state.ready) addRecent(state.selectedName);
         if (!isStandalone) {
             state.uiPreset = liveUiPresetName();
             state.checkpoint = liveCheckpointName();
         }
-        setGeneratedDraft({ preserveSaved: true });
+        if (state.ready && state.dirty) {
+            state.generated = buildPrompt(selectedPreset());
+            state.dirty = state.draft !== state.generated;
+        } else {
+            setGeneratedDraft({ preserveSaved: true });
+        }
         lastAutoProfile = resolvedProfile();
         state.ready = true;
         persistState();
+    }
+
+    async function reloadPresets(notifyPeers = true) {
+        if (reloading || !state.ready) return;
+        reloading = true;
+        const syncButtons = () => queryAll('[data-k2bg-action="reload-presets"]').forEach(button => {
+            button.disabled = reloading;
+            button.title = t(reloading ? "reloadingPresets" : "reloadPresets");
+            button.setAttribute("aria-label", button.title);
+        });
+        syncButtons();
+        try {
+            await loadPresets();
+            thumbnailRevision = encodeURIComponent(newId());
+            for (const [key, action] of [["group", "group"], ["drawerGroup", "drawer-group"]]) {
+                if (!state.presets.some(p => p.group === state[key] || categoryPath(p) === state[key])) state[key] = "All categories";
+                queryAll(`[data-k2bg-action="${action}"]`).forEach(select => { select.innerHTML = categoryOptions(state[key]); });
+            }
+            persistState();
+            refreshAll();
+            setNotice(t("presetsReloaded"));
+            if (notifyPeers) broadcast({ type: "catalog-reloaded" });
+        } catch (error) {
+            console.error("Background Prompter could not reload the catalog", error);
+            setNotice(t("reloadFailed"));
+        } finally {
+            reloading = false;
+            syncButtons();
+        }
     }
 
     async function initialize() {

@@ -4,7 +4,7 @@
 
 The MIT License covers the maintainer-authored extension code,
 documentation, preset data (including `data/background_presets.json` and
-`data/tag_overrides.json`), and the 592 preview images in `assets/thumbnails/`.
+`data/tag_overrides.json`), and the bundled preview images in `assets/thumbnails/`.
 
 The maintainer reports creating the presets and preview images using GPT
 tools and has explicitly included them in the MIT grant, to the extent of
