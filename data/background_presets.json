@@ -1,7 +1,7 @@
 {
   "version": "2026-11-25",
   "description": "Background Prompter catalog for Forge Neo and ReForge.",
-  "total_available": 1016,
+  "total_available": 1100,
   "presets": [
     {
       "id": "tree_portrait_background",
@@ -17906,6 +17906,1321 @@
         "right hand drive"
       ],
       "thumbnail": "japanese_cargo_van_front_cabin.webp",
+      "promptFormat": "comma"
+    },
+    {
+      "id": "video_editing_timeline",
+      "name": "Video Editing Timeline",
+      "group": "Indoor",
+      "thumbnail": "video_editing_timeline.webp",
+      "text": "full-frame video editing interface, dark gray panels, mountain landscape in the upper preview monitor, staggered video clips and green audio waveforms across the lower timeline, thin blue playhead",
+      "tags": "scenery, video_timeline, mountain_preview, audio_waveform",
+      "searchTags": [
+        "Premiere Pro風｜動画編集",
+        "Premiere",
+        "Pro",
+        "プレミア",
+        "動画編集",
+        "タイムライン",
+        "Premiere Pro風"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "node_graph_with_forest_preview",
+      "name": "Node Graph with Forest Preview",
+      "group": "Indoor",
+      "thumbnail": "node_graph_with_forest_preview.webp",
+      "text": "full-frame ComfyUI workflow canvas, dark charcoal grid, compact nodes arranged from left to right, curved colored connections between round ports, small forest image preview in the final node",
+      "tags": "scenery, node_editor, grid_canvas, curved_connections",
+      "searchTags": [
+        "ComfyUI｜ノード編集",
+        "ComfyUI",
+        "ノード",
+        "ノード編集"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "architectural_cad_floor_plan",
+      "name": "Architectural CAD Floor Plan",
+      "group": "Indoor",
+      "thumbnail": "architectural_cad_floor_plan.webp",
+      "text": "full-frame architectural CAD interface, deep navy drafting canvas, compact house floor plan in fine white lines, quarter-circle door swings, cyan dimension lines around the perimeter, command bar along the bottom",
+      "tags": "scenery, architectural_drawing, floor_plan, dimension_lines",
+      "searchTags": [
+        "AutoCAD風｜建築製図",
+        "AutoCAD",
+        "CAD",
+        "建築製図",
+        "AutoCAD風"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "classic_teal_pc_desktop",
+      "name": "Classic Teal PC Desktop",
+      "group": "Indoor",
+      "thumbnail": "classic_teal_pc_desktop.webp",
+      "text": "full-frame 1990s desktop interface, teal wallpaper, two overlapping gray file windows with beveled borders, small bitmap folder icons, narrow taskbar along the bottom, faint horizontal CRT scanlines",
+      "tags": "scenery, retro_desktop, teal_wallpaper, beveled_windows",
+      "searchTags": [
+        "CRT時代｜デスクトップ",
+        "Windows",
+        "ウィンドウズ",
+        "CRT",
+        "CRT時代",
+        "デスクトップ"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "monochrome_macintosh_finder",
+      "name": "Monochrome Macintosh Finder",
+      "group": "Indoor",
+      "thumbnail": "monochrome_macintosh_finder.webp",
+      "text": "full-frame classic Macintosh desktop, monochrome checkerboard wallpaper, white menu bar across the top, open Finder window with a striped title bar, pixel folder icons, tiny trash can in the lower right corner",
+      "tags": "scenery, monochrome_desktop, pixel_icons, striped_title_bar",
+      "searchTags": [
+        "クラシックMac風｜白黒のFinder",
+        "Macintosh",
+        "Mac",
+        "マック",
+        "Finder",
+        "クラシックMac風",
+        "白黒のFinder"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "nextstep_workstation_desktop",
+      "name": "NeXTSTEP Workstation Desktop",
+      "group": "Indoor",
+      "thumbnail": "nextstep_workstation_desktop.webp",
+      "text": "full-frame NeXTSTEP workstation desktop, charcoal gray background, vertical menu in the upper left corner, file browser with narrow directory columns and a black title bar, square beveled dock tiles stacked along the right edge",
+      "tags": "scenery, gray_desktop, vertical_dock, column_browser",
+      "searchTags": [
+        "NeXTSTEP風｜グレーのワークステーション",
+        "NeXTSTEP",
+        "ネクストステップ",
+        "NeXTSTEP風",
+        "グレーのワークステーション"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "gnome_2_linux_desktop",
+      "name": "GNOME 2 Linux Desktop",
+      "group": "Indoor",
+      "thumbnail": "gnome_2_linux_desktop.webp",
+      "text": "full-frame GNOME 2 Linux desktop, muted olive wallpaper, slim top panel with application menus and a clock, dark terminal window beside a file browser with tan folder icons, workspace switcher on the bottom panel",
+      "tags": "scenery, linux_desktop, terminal_window, workspace_switcher",
+      "searchTags": [
+        "Linux風｜GNOME 2デスクトップ",
+        "Linux",
+        "GNOME",
+        "リナックス",
+        "Linux風",
+        "GNOME 2デスクトップ"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "mario_kart_seaside_circuit",
+      "name": "Mario Kart Seaside Circuit",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "mario_kart_seaside_circuit.webp",
+      "text": "Mario Kart style seaside circuit, broad asphalt bend at track level, red and white curbs sweeping into the distance, bright chevron boards along the outer rail, turquoise bay beyond the curve, open roadway in the foreground",
+      "tags": "scenery, coastal_racetrack, striped_curbs, turquoise_bay",
+      "searchTags": [
+        "マリオカート風｜海辺のサーキット",
+        "マリオカート",
+        "レース",
+        "マリオカート風",
+        "海辺のサーキット"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "super_mario_8_bit_overworld",
+      "name": "Super Mario 8-Bit Overworld",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "super_mario_8_bit_overworld.webp",
+      "text": "classic Super Mario Bros overworld, side-on 8-bit pixel scenery, continuous brick ground across the foreground, green pipe near the right edge, floating question blocks, stepped green hills and small white clouds against a flat blue sky",
+      "tags": "scenery, pixel_scenery, brick_ground, green_pipe",
+      "searchTags": [
+        "スーパーマリオ風｜ファミコンの地上ステージ",
+        "スーパーマリオ",
+        "マリオ",
+        "スーパーマリオ風",
+        "ファミコンの地上ステージ"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "super_mario_castle_grounds",
+      "name": "Super Mario Castle Grounds",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "super_mario_castle_grounds.webp",
+      "text": "Super Mario 64 style castle grounds, eye-level view across a sunlit grassy platform, low polygon trees beside a round flower bed, short stone bridge over a blue moat, white castle with red conical roofs beyond the bridge",
+      "tags": "scenery, castle_grounds, green_meadow, stone_bridge",
+      "searchTags": [
+        "スーパーマリオ風｜3Dの城と草地",
+        "スーパーマリオ",
+        "マリオ",
+        "スーパーマリオ風",
+        "3Dの城と草地"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "dragon_quest_castle_town",
+      "name": "Dragon Quest Castle Town",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "dragon_quest_castle_town.webp",
+      "text": "Dragon Quest style castle town, eye-level view from a cobblestone square, timber inn with a hanging sign, blue awning over an item shop, wooden barrels beneath the eaves, sunny lane leading uphill to a small stone castle gate",
+      "tags": "scenery, castle_town, cobblestone_square, timber_inn",
+      "searchTags": [
+        "ドラゴンクエスト風｜旅立ちの城下町",
+        "ドラゴンクエスト",
+        "ドラクエ",
+        "ドラゴンクエスト風",
+        "旅立ちの城下町"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "final_fantasy_side_battle_field",
+      "name": "Final Fantasy Side Battle Field",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "final_fantasy_side_battle_field.webp",
+      "text": "classic Final Fantasy side-view battle backdrop, broad ochre rock shelf on the left, narrow strip of level grass extending from front to back on the right, open ground between both sides, layered blue cliffs and a distant waterfall, 16-bit pixel scenery",
+      "tags": "scenery, pixel_landscape, ochre_rock_shelf, level_grass",
+      "searchTags": [
+        "ファイナルファンタジー風｜左右対陣の戦闘フィールド",
+        "ファイナルファンタジー",
+        "FF",
+        "ファイナルファンタジー風",
+        "左右対陣の戦闘フィールド"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "street_fighter_castle_rooftop",
+      "name": "Street Fighter Castle Rooftop",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "street_fighter_castle_rooftop.webp",
+      "text": "early Street Fighter II style Japanese castle rooftop stage, side-on arcade backdrop, broad wooden platform across the foreground, blue tiled roofs stepping down beyond its edge, dark pine branches, distant castle keep against a burnt orange evening sky",
+      "tags": "scenery, castle_rooftop, wooden_platform, tiled_roofs",
+      "searchTags": [
+        "日本｜夕暮れの城の屋根",
+        "ストリートファイター",
+        "ストII",
+        "格闘ゲーム",
+        "日本",
+        "夕暮れの城の屋根"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "street_fighter_market_lane",
+      "name": "Street Fighter Market Lane",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "street_fighter_market_lane.webp",
+      "text": "early Street Fighter II style Chinese market street, side-on arcade backdrop, clear paving stones across the foreground, striped canvas awning over a vegetable stall, bamboo baskets beside a shopfront, parked bicycle against weathered shutters, warm afternoon light",
+      "tags": "scenery, market_street, striped_awning, bamboo_baskets",
+      "searchTags": [
+        "中国｜市場の路地",
+        "ストリートファイター",
+        "ストII",
+        "格闘ゲーム",
+        "中国",
+        "市場の路地"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "street_fighter_airbase_apron",
+      "name": "Street Fighter Airbase Apron",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "street_fighter_airbase_apron.webp",
+      "text": "early Street Fighter II style airbase stage, side-on view at runway level, sunlit concrete apron across the foreground, parked gray fighter jet broadside in the middle distance, yellow wheel chocks, low hangar and stacked crates under a pale blue sky",
+      "tags": "scenery, airfield, concrete_apron, parked_jet",
+      "searchTags": [
+        "アメリカ｜空軍基地の駐機場",
+        "ストリートファイター",
+        "ストII",
+        "格闘ゲーム",
+        "アメリカ",
+        "空軍基地の駐機場"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "street_fighter_fuji_bathhouse",
+      "name": "Street Fighter Fuji Bathhouse",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "street_fighter_fuji_bathhouse.webp",
+      "text": "early Street Fighter II style Japanese bathhouse stage, side-on arcade backdrop, pale tiled floor across the foreground, low bath rim along the back wall, large painted Mount Fuji above blue waves, wooden wash buckets at the far edge",
+      "tags": "scenery, bathhouse, tiled_floor, Mount_Fuji_mural",
+      "searchTags": [
+        "日本｜銭湯のタイル床と富士山壁画",
+        "ストリートファイター",
+        "ストII",
+        "格闘ゲーム",
+        "日本",
+        "銭湯のタイル床と富士山壁画"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "street_fighter_palace_hall",
+      "name": "Street Fighter Palace Hall",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "street_fighter_palace_hall.webp",
+      "text": "early Street Fighter II style Indian palace stage, side-on arcade backdrop, broad sandstone floor across the foreground, elephants in recessed bays behind a low rail, carved stone pillars, red and gold cloth hangings, warm light beneath high arches",
+      "tags": "scenery, palace_interior, sandstone_floor, carved_pillars",
+      "searchTags": [
+        "インド｜象のいる宮殿の広間",
+        "ストリートファイター",
+        "ストII",
+        "格闘ゲーム",
+        "インド",
+        "象のいる宮殿の広間"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "dragon_quest_xi_heliodor_grasslands",
+      "name": "Dragon Quest XI Heliodor Grasslands",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "dragon_quest_xi_heliodor_grasslands.webp",
+      "text": "Dragon Quest XI style 3D field scenery, winding dirt road through bright green hills, small wildflowers along the verge, sunlit rock outcrops at the bend, distant castle walls beneath a broad blue sky",
+      "tags": "scenery, grassy_hills, winding_dirt_road, castle_walls",
+      "searchTags": [
+        "デルカダール地方の草原街道",
+        "ドラゴンクエストXI",
+        "ドラクエ11"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "dragon_quest_xi_cobblestone_village",
+      "name": "Dragon Quest XI Cobblestone Village",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "dragon_quest_xi_cobblestone_village.webp",
+      "text": "Dragon Quest XI style 3D village scenery, narrow dirt lane between thatched cottages, low stone walls and vegetable gardens, rocky bluff close behind the rooftops, warm morning light across the village green",
+      "tags": "scenery, rural_village, rocky_cliffs, village_path",
+      "searchTags": [
+        "ドラクエXI風｜イシの村",
+        "ドラゴンクエストXI",
+        "ドラクエ11",
+        "ドラクエXI風",
+        "イシの村"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "dragon_quest_xi_gallopolis_desert",
+      "name": "Dragon Quest XI Gallopolis Desert",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "dragon_quest_xi_gallopolis_desert.webp",
+      "text": "Dragon Quest XI style 3D desert scenery, pale sandy road between rust-colored sandstone shelves, sparse dry shrubs, domed towers and a fortified city gate on the horizon, violet shadows beneath a cloudless sky",
+      "tags": "scenery, desert_road, sandstone_ledges, domed_towers",
+      "searchTags": [
+        "ドラクエXI風｜サマディーの砂漠",
+        "ドラゴンクエストXI",
+        "ドラクエ11",
+        "ドラクエXI風",
+        "サマディーの砂漠"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "halo_infinite_ringworld_lakeshore",
+      "name": "Halo Infinite Ringworld Lakeshore",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "halo_infinite_ringworld_lakeshore.webp",
+      "text": "Halo Infinite style ringworld lakeshore, granite shelf at the waterline, dark conifers across a still blue lake, angular Forerunner spire on the far bank, immense curved band of terrain high overhead",
+      "tags": "scenery, ringworld, granite_shore, distant_spire",
+      "searchTags": [
+        "Halo Infinite風｜リングワールドの湖畔",
+        "Halo",
+        "ヘイロー",
+        "Halo Infinite風",
+        "リングワールドの湖畔"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "gears_of_war_ruined_boulevard",
+      "name": "Gears of War Ruined Boulevard",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "gears_of_war_ruined_boulevard.webp",
+      "text": "Gears of War style ruined city boulevard, cracked paving stones, monumental stone facades with deep arches, broken cornices along the curb, pale daylight through a ruined civic dome at the end of the street",
+      "tags": "scenery, ruined_city, stone_arches, broken_cornices",
+      "searchTags": [
+        "Gears of War風｜石造都市の大通り",
+        "Gears",
+        "ギアーズ",
+        "Gears of War風",
+        "石造都市の大通り"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "forza_horizon_mexican_mountain_pass",
+      "name": "Forza Horizon Mexican Mountain Pass",
+      "group": "Outdoor",
+      "thumbnail": "forza_horizon_mexican_mountain_pass.webp",
+      "text": "Forza Horizon 5 style Mexican mountain road, broad asphalt hairpin, sun-bleached guardrail along the outer bend, dry volcanic slopes, distant switchbacks far below in the valley, crisp afternoon light",
+      "tags": "scenery, mountain_road, hairpin_bend, dry_valley",
+      "searchTags": [
+        "Forza Horizon 5風｜メキシコの山岳道路",
+        "フォルツァホライゾン",
+        "レース",
+        "Forza Horizon 5風",
+        "メキシコの山岳道路"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "sea_of_thieves_outpost_jetty",
+      "name": "Sea of Thieves Outpost Jetty",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "sea_of_thieves_outpost_jetty.webp",
+      "text": "Sea of Thieves style tropical outpost, uneven timber jetty above clear turquoise shallows, pale sand visible between the planks, crooked tavern at the shore end, amber lanterns beneath its deep wooden eaves",
+      "tags": "scenery, wooden_jetty, island_tavern, tropical_water",
+      "searchTags": [
+        "Sea of Thieves風｜南の島の前哨地",
+        "シーオブシーヴス",
+        "海賊",
+        "Sea of Thieves風",
+        "南の島の前哨地"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "fable_ii_bowerstone_old_town",
+      "name": "Fable II Bowerstone Old Town",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "fable_ii_bowerstone_old_town.webp",
+      "text": "Fable II style Bowerstone old town, narrow cobbled lane, crooked timber upper stories overhanging the street, small leaded windows, wrought iron shop signs, pale morning mist beneath a distant brick arch",
+      "tags": "scenery, cobbled_lane, timber_upper_stories, morning_mist",
+      "searchTags": [
+        "Fable II風｜バウワーストーン旧市街",
+        "フェイブル",
+        "Fable II風",
+        "バウワーストーン旧市街"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "forza_horizon_guanajuato_tunnel",
+      "name": "Forza Horizon Guanajuato Tunnel",
+      "group": "Outdoor",
+      "thumbnail": "forza_horizon_guanajuato_tunnel.webp",
+      "text": "Forza Horizon 5 style Guanajuato street, rough stone tunnel mouth in the foreground, sunlit cobblestones beyond the arch, ochre and turquoise facades along a tight bend, colorful hillside rooftops above",
+      "tags": "scenery, stone_tunnel, hillside_town, bright_facades",
+      "searchTags": [
+        "Forza Horizon 5風｜グアナフアトのトンネル出口",
+        "フォルツァホライゾン",
+        "レース",
+        "Forza Horizon 5風",
+        "グアナフアトのトンネル出口"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "operation_flashpoint_rural_crossroads",
+      "name": "Operation Flashpoint Rural Crossroads",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "operation_flashpoint_rural_crossroads.webp",
+      "text": "Operation Flashpoint style Cold War island countryside, unobstructed first-person view, rutted gravel lane beside an open meadow, low plaster cottages at a crossroads, pine ridge on the horizon, flat overcast light",
+      "tags": "scenery, gravel_lane, meadow, low_cottages",
+      "searchTags": [
+        "Operation Flashpoint風｜冷戦期の田園道路",
+        "オペレーションフラッシュポイント",
+        "Operation Flashpoint風",
+        "冷戦期の田園道路"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "battlefield_wwii_village_square",
+      "name": "Battlefield WWII Village Square",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "battlefield_wwii_village_square.webp",
+      "text": "World War II Battlefield style village street, unobstructed first-person view, dark cobblestones beneath a chipped stone arch, roofless brick houses around a market square, distant church steeple in low gray haze",
+      "tags": "scenery, village_street, stone_arch, ruined_brick_houses",
+      "searchTags": [
+        "Battlefield風｜第二次世界大戦期のヨーロッパ市街",
+        "バトルフィールド",
+        "FPS",
+        "Battlefield風",
+        "第二次世界大戦期のヨーロッパ市街"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "battlefield_offshore_facility",
+      "name": "Battlefield Offshore Facility",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "battlefield_offshore_facility.webp",
+      "text": "near-future Battlefield style offshore facility, unobstructed first-person view, rain-dark steel walkway above rough water, floodlit service modules, red obstruction lights on a radar mast, cold blue dusk",
+      "tags": "scenery, offshore_platform, wet_walkway, radar_mast",
+      "searchTags": [
+        "Battlefield風｜近未来の海上施設",
+        "バトルフィールド",
+        "FPS",
+        "Battlefield風",
+        "近未来の海上施設"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "doom_martian_refinery",
+      "name": "DOOM Martian Refinery",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "doom_martian_refinery.webp",
+      "text": "DOOM style Martian refinery, unobstructed first-person view, ribbed steel floor above an orange furnace shaft, massive black coolant pipes, deep red light beneath grated platforms, heavy bulkhead door at the far end",
+      "tags": "scenery, industrial_refinery, steel_grating, furnace_shaft",
+      "searchTags": [
+        "DOOM風｜火星基地の精錬炉",
+        "ドゥーム",
+        "火星",
+        "DOOM風",
+        "火星基地の精錬炉"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "uncharted_libertalia_cove",
+      "name": "Uncharted Libertalia Cove",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "uncharted_libertalia_cove.webp",
+      "text": "Uncharted 4 style Libertalia cove, cracked stone terrace above turquoise water, vine-covered arcade along one side, sunken rooftops near the shore, a broken stone bridge between jungle cliffs",
+      "tags": "scenery, stone_terrace, jungle_cove, ruined_bridge",
+      "searchTags": [
+        "リバタリアの入り江",
+        "アンチャーテッド"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "nier_amusement_park_avenue",
+      "name": "NieR Amusement Park Avenue",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "nier_amusement_park_avenue.webp",
+      "text": "NieR Automata style abandoned amusement park, cracked parade avenue at dusk, warm bulbs along faded carnival stalls, distant Ferris wheel above the rooftops, illuminated castle facade at the end of the avenue",
+      "tags": "scenery, abandoned_amusement_park, carnival_bulbs, Ferris_wheel",
+      "searchTags": [
+        "遊園地廃墟・夜のメインストリート",
+        "ニーアオートマタ",
+        "遊園地廃墟",
+        "夜のメインストリート"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "nier_flooded_city_road",
+      "name": "NieR Flooded City Road",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "nier_flooded_city_road.webp",
+      "text": "NieR Automata style flooded city, broken asphalt road just above sea level, submerged traffic lights beside the guardrail, upper floors of concrete towers across pale blue water, hazy ocean horizon",
+      "tags": "scenery, flooded_city, broken_asphalt, submerged_traffic_lights",
+      "searchTags": [
+        "水没都市・海面に途切れる道路",
+        "ニーアオートマタ",
+        "水没都市",
+        "海面に途切れる道路"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "nier_factory_furnace_catwalk",
+      "name": "NieR Factory Furnace Catwalk",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "nier_factory_furnace_catwalk.webp",
+      "text": "NieR Automata style abandoned factory, narrow grated catwalk high above a furnace pit, rust-red pipes across the ceiling, layered steel walkways far below, amber light through the floor grating",
+      "tags": "scenery, industrial_catwalk, furnace_pit, overhead_pipes",
+      "searchTags": [
+        "工場廃墟・炉の上の連絡通路",
+        "ニーアオートマタ",
+        "工場廃墟",
+        "炉の上の連絡通路"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "gran_turismo_suzuka_final_bend",
+      "name": "Gran Turismo Suzuka Final Bend",
+      "group": "Outdoor",
+      "thumbnail": "gran_turismo_suzuka_final_bend.webp",
+      "text": "Gran Turismo 7 style Suzuka Circuit, track-level view from the final bend, red and white curbs beside short grass, Ferris wheel beyond the safety fence, open asphalt toward the main straight",
+      "tags": "scenery, racetrack, red_and_white_curbs, Ferris_wheel",
+      "searchTags": [
+        "鈴鹿・観覧車が見える最終コーナー",
+        "グランツーリスモ7",
+        "GT7",
+        "鈴鹿",
+        "観覧車が見える最終コーナー"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "gran_turismo_spa_eau_rouge",
+      "name": "Gran Turismo Spa Eau Rouge",
+      "group": "Outdoor",
+      "thumbnail": "gran_turismo_spa_eau_rouge.webp",
+      "text": "Gran Turismo 7 style Spa circuit, rain-dark asphalt at the foot of Eau Rouge, steep uphill ribbon of track beyond the dip, red and yellow curbs, spruce forest under low Ardennes clouds",
+      "tags": "scenery, wet_racetrack, steep_bend, spruce_forest",
+      "searchTags": [
+        "スパ・フランコルシャン・雨上がりのオー・ルージュ",
+        "グランツーリスモ7",
+        "GT7",
+        "スパ",
+        "フランコルシャン",
+        "雨上がりのオー",
+        "ルージュ"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "gran_turismo_trial_mountain_tunnel",
+      "name": "Gran Turismo Trial Mountain Tunnel",
+      "group": "Outdoor",
+      "thumbnail": "gran_turismo_trial_mountain_tunnel.webp",
+      "text": "Gran Turismo 7 style Trial Mountain circuit, rough rock tunnel around the foreground, bright patch of asphalt at the exit, tall conifers above a stone embankment, afternoon light across the racing line",
+      "tags": "scenery, rock_tunnel, asphalt, tall_conifers",
+      "searchTags": [
+        "トライアルマウンテン・岩山のトンネル出口",
+        "グランツーリスモ7",
+        "GT7",
+        "トライアルマウンテン",
+        "岩山のトンネル出口"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "lineage_ii_aden_castle_staircase",
+      "name": "Lineage II Aden Castle Staircase",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "lineage_ii_aden_castle_staircase.webp",
+      "text": "Lineage II style Aden Castle courtyard, broad pale stone staircase, tall arched entrance above the landing, blue clan banners between slender towers, polished flagstones in clear morning light",
+      "tags": "scenery, castle_courtyard, pale_staircase, blue_banners",
+      "searchTags": [
+        "アデン城・白亜の大階段",
+        "リネージュ2",
+        "アデン城",
+        "白亜の大階段"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "lineage_ii_giran_siege_field",
+      "name": "Lineage II Giran Siege Field",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "lineage_ii_giran_siege_field.webp",
+      "text": "Lineage II style Giran siege field, broad strip of worn earth before the castle gate, shallow wheel ruts in the grass, timber barricades along the flanks, distant clan standards beneath gray battlements",
+      "tags": "scenery, worn_earth, timber_barricades, battlements",
+      "searchTags": [
+        "ギラン城・攻城戦フィールド",
+        "リネージュ2",
+        "ギラン城",
+        "攻城戦フィールド"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "lineage_ii_elven_village_pool",
+      "name": "Lineage II Elven Village Pool",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "lineage_ii_elven_village_pool.webp",
+      "text": "Lineage II style elven village, immense silver-barked mother tree beside a clear pool, pale stone footbridge between mossy roots, slender elven arches beneath the canopy, green light on shallow water",
+      "tags": "scenery, elven_village, ancient_tree, stone_footbridge",
+      "searchTags": [
+        "エルフの村・世界樹の泉",
+        "リネージュ2",
+        "エルフの村",
+        "世界樹の泉"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "gran_turismo_tokyo_expressway_at_night",
+      "name": "Gran Turismo Tokyo Expressway at Night",
+      "group": "Outdoor",
+      "thumbnail": "gran_turismo_tokyo_expressway_at_night.webp",
+      "text": "Gran Turismo 7 style Tokyo Expressway at night, smooth asphalt between tall sound barriers, rows of white tunnel lights, dark glass towers beyond the elevated bend, pale lane markings along the open road",
+      "tags": "scenery, night_expressway, sound_barriers, white_tunnel_lights",
+      "searchTags": [
+        "東京エクスプレスウェイの夜",
+        "グランツーリスモ7",
+        "GT7"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "animal_crossing_island_plaza",
+      "name": "Animal Crossing Island Plaza",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "animal_crossing_island_plaza.webp",
+      "text": "Animal Crossing New Horizons style island plaza, warm brick paving, cream town hall with a green roof and clock, wooden bulletin board beside the entrance, round fruit trees along the plaza edge",
+      "tags": "scenery, brick_plaza, town_hall, fruit_trees",
+      "searchTags": [
+        "案内所前の広場",
+        "あつまれどうぶつの森",
+        "あつ森"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "animal_crossing_airport_pier",
+      "name": "Animal Crossing Airport Pier",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "animal_crossing_airport_pier.webp",
+      "text": "Animal Crossing New Horizons style island airport pier, low blue seaplane terminal, orange windsock, short wooden jetty above clear turquoise shallows, sandy beach and rounded grassy cliffs beyond",
+      "tags": "scenery, seaplane_terminal, island_jetty, windsock",
+      "searchTags": [
+        "飛行場から島へ続く桟橋",
+        "あつまれどうぶつの森",
+        "あつ森"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "animal_crossing_island_shop",
+      "name": "Animal Crossing Island Shop",
+      "group": "Indoor",
+      "thumbnail": "animal_crossing_island_shop.webp",
+      "text": "Animal Crossing New Horizons style island shop interior, honey-colored plank floor, two raised furniture displays along the back wall, small goods on the front counter, striped wallpaper and soft window light",
+      "tags": "scenery, shop_interior, plank_floor, wooden_displays",
+      "searchTags": [
+        "タヌキ商店の店内",
+        "あつまれどうぶつの森",
+        "あつ森"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "genshin_liyue_harbor_at_night",
+      "name": "Genshin Liyue Harbor at Night",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "genshin_liyue_harbor_at_night.webp",
+      "text": "Genshin Impact style Liyue Harbor at night, broad timber wharf, red lanterns beneath layered tile roofs, dark merchant ships beyond the mooring posts, amber reflections across jade water",
+      "tags": "scenery, timber_wharf, red_lanterns, tiled_roofs",
+      "searchTags": [
+        "原神・璃月港の夜の波止場",
+        "原神",
+        "璃月",
+        "璃月港の夜の波止場"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "genshin_wangshu_inn_terrace",
+      "name": "Genshin Wangshu Inn Terrace",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "genshin_wangshu_inn_terrace.webp",
+      "text": "Genshin Impact style Wangshu Inn terrace, wooden balcony around a massive tree trunk, curved tiled eaves overhead, silver reed beds far below, pale limestone peaks beyond the marsh",
+      "tags": "scenery, wooden_balcony, giant_tree_trunk, reed_beds",
+      "searchTags": [
+        "原神・望舒旅館の高い縁台",
+        "原神",
+        "璃月",
+        "望舒旅館の高い縁台"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "honkai_astral_express_parlor_car",
+      "name": "Honkai Astral Express Parlor Car",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "honkai_astral_express_parlor_car.webp",
+      "text": "Honkai Star Rail style Astral Express parlor car, burgundy carpet along a broad central aisle, brass lamps beside upholstered sofas, tall carriage windows filled with stars and a distant blue planet",
+      "tags": "scenery, railway_lounge, brass_lamps, starfield_window",
+      "searchTags": [
+        "崩壊：スターレイル・星穹列車のラウンジ",
+        "崩壊スターレイル",
+        "崩壊：スターレイル",
+        "星穹列車のラウンジ"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "zenless_zone_zero_sixth_street_video_store",
+      "name": "Zenless Zone Zero Sixth Street Video Store",
+      "group": "Indoor",
+      "thumbnail": "zenless_zone_zero_sixth_street_video_store.webp",
+      "text": "Zenless Zone Zero style Sixth Street video store, narrow aisles of colorful cassette cases, handwritten shelf dividers, chunky CRT television above the counter, afternoon light through the street-facing glass",
+      "tags": "scenery, video_store, cassette_shelves, CRT_television",
+      "searchTags": [
+        "ゼンレスゾーンゼロ・六分街のビデオ店",
+        "ゼンレスゾーンゼロ",
+        "六分街のビデオ店"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "evening_chat_stream_living_room",
+      "name": "Evening Chat Stream Living Room",
+      "group": "Indoor",
+      "thumbnail": "evening_chat_stream_living_room.webp",
+      "text": "full-frame webcam view of a cozy Japanese apartment at night, low sofa against a warm cream wall, amber floor lamp at the left edge, small bookshelf at the right, open space in the center",
+      "tags": "scenery, livestream_room, low_sofa, amber_floor_lamp",
+      "searchTags": [
+        "夜の自宅雑談配信",
+        "ユーチューバー",
+        "YouTube",
+        "配信"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "daylight_review_stream_workbench",
+      "name": "Daylight Review Stream Workbench",
+      "group": "Indoor",
+      "thumbnail": "daylight_review_stream_workbench.webp",
+      "text": "front-facing livestream view across a pale wooden workbench, clear tabletop in the foreground, pegboard with neatly spaced tools, shallow parts drawers along one side, soft daylight through a frosted window",
+      "tags": "scenery, workbench, wall_pegboard, small_parts_drawers",
+      "searchTags": [
+        "昼の工作・商品レビュー配信",
+        "ユーチューバー",
+        "YouTube",
+        "配信",
+        "昼の工作",
+        "商品レビュー配信"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "pastel_attic_vtuber_stream_layout",
+      "name": "Pastel Attic VTuber Stream Layout",
+      "group": "Indoor",
+      "thumbnail": "pastel_attic_vtuber_stream_layout.webp",
+      "text": "illustrated livestream layout, pastel attic room beneath a sloped ceiling, moonlit skylight, cushions along a low window seat, open central area, slim translucent chat panel at the right edge",
+      "tags": "scenery, illustrated_attic, moonlit_skylight, chat_panel",
+      "searchTags": [
+        "VTuberのイラスト部屋配信",
+        "ユーチューバー",
+        "YouTube",
+        "配信"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "idolmaster_small_theater_stage",
+      "name": "Idolmaster Small Theater Stage",
+      "group": "Indoor",
+      "thumbnail": "idolmaster_small_theater_stage.webp",
+      "text": "Idolmaster style intimate theater stage, shallow apron close to the front row, burgundy side curtains, cream proscenium with a gold star crest, warm footlights along the wooden stage edge",
+      "tags": "scenery, theater_stage, burgundy_curtains, footlights",
+      "searchTags": [
+        "小劇場の定期公演ステージ",
+        "アイドルマスター",
+        "アイマス"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "idolmaster_heart_arch_tv_set",
+      "name": "Idolmaster Heart Arch TV Set",
+      "group": "Indoor",
+      "thumbnail": "idolmaster_heart_arch_tv_set.webp",
+      "text": "Idolmaster style television music stage, nested pastel heart arches, checkerboard floor, short pink staircases on either side, candy-colored bulbs around a mint backdrop",
+      "tags": "scenery, television_stage, pastel_heart_arches, checkerboard_floor",
+      "searchTags": [
+        "音楽番組のハート型セット",
+        "アイドルマスター",
+        "アイマス"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "idolmaster_dome_center_stage",
+      "name": "Idolmaster Dome Center Stage",
+      "group": "Indoor",
+      "thumbnail": "idolmaster_dome_center_stage.webp",
+      "text": "Idolmaster style dome concert center stage, circular platform with a translucent floor, narrow runways radiating toward distant seating tiers, suspended halo of lights beneath a vast steel roof",
+      "tags": "scenery, circular_stage, radial_runways, lighting_halo",
+      "searchTags": [
+        "ドーム公演のセンターステージ",
+        "アイドルマスター",
+        "アイマス"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "god_of_war_lake_of_nine_landing",
+      "name": "God of War Lake of Nine Landing",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "god_of_war_lake_of_nine_landing.webp",
+      "text": "God of War style Lake of Nine shoreline, weathered timber landing beside dark Nordic water, immense circular temple across the lake, long stone bridge beneath snowbound cliffs, cold overcast light",
+      "tags": "scenery, stone_landing, mountain_lake, Norse_masonry",
+      "searchTags": [
+        "ミズガルズ・九界の湖の船着き場",
+        "ゴッドオブウォー",
+        "ミズガルズ",
+        "九界の湖の船着き場"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "god_of_war_alfheim_light_bridge",
+      "name": "God of War Alfheim Light Bridge",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "god_of_war_alfheim_light_bridge.webp",
+      "text": "God of War style Alfheim temple passage, slender white stone arches above a deep chasm, luminous blue light bridge, fine gold inlay beneath pale roots, pearl-colored haze in the open atrium",
+      "tags": "scenery, temple_passage, light_bridge, pale_roots",
+      "searchTags": [
+        "アルフヘイム・光の神殿の回廊",
+        "ゴッドオブウォー",
+        "アルフヘイム",
+        "光の神殿の回廊"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "sky_beyond_the_aircraft_door",
+      "name": "Sky Beyond the Aircraft Door",
+      "group": "Outdoor",
+      "thumbnail": "sky_beyond_the_aircraft_door.webp",
+      "text": "open sky just outside a small aircraft at altitude, open cabin doorway and a sliver of fuselage in the upper left corner, broad blue sky across the frame, distant patchwork fields below a tilted horizon",
+      "tags": "scenery, open_sky, aircraft_doorway, distant_fields",
+      "searchTags": [
+        "機外に出た直後",
+        "スカイダイビング",
+        "空撮"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "river_valley_from_freefall_altitude",
+      "name": "River Valley from Freefall Altitude",
+      "group": "Outdoor",
+      "thumbnail": "river_valley_from_freefall_altitude.webp",
+      "text": "high-altitude view angled toward the ground, broad river bend among tiny rectangular fields, scattered white clouds at mid-distance, faint cloud shadows across the valley, pale blue haze near the far horizon",
+      "tags": "scenery, aerial_landscape, river_bend, cloud_shadows",
+      "searchTags": [
+        "降下途中・足元に見える地上",
+        "スカイダイビング",
+        "空撮",
+        "降下途中",
+        "足元に見える地上"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "magical_girl_transformation_light_rings",
+      "name": "Magical Girl Transformation Light Rings",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "magical_girl_transformation_light_rings.webp",
+      "text": "magical girl transformation backdrop, luminous rose-pink oval at the center, concentric pearly rings, translucent ribbon arcs along the outer edges, tiny starbursts against a pink to lilac gradient",
+      "tags": "scenery, rose_gradient, pearly_rings, starbursts",
+      "searchTags": [
+        "プリキュア風・魔法少女の変身背景",
+        "プリキュア",
+        "魔法少女",
+        "プリキュア風",
+        "魔法少女の変身背景"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "retro_anime_battleship_gauge_bridge",
+      "name": "Retro Anime Battleship Gauge Bridge",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "retro_anime_battleship_gauge_bridge.webp",
+      "text": "retro anime space battleship bridge, wide sunken command deck, curved banks of round analog gauges with fine needles and amber scales, oversized overhead monitor above narrow forward windows, deep navy metalwork",
+      "tags": "scenery, spacecraft_bridge, analog_gauges, overhead_monitor",
+      "searchTags": [
+        "宇宙戦艦ヤマト風・針式計器の大艦橋",
+        "宇宙戦艦ヤマト",
+        "アナログ計器",
+        "宇宙戦艦ヤマト風",
+        "針式計器の大艦橋"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "dark_souls_anor_londo_grand_staircase",
+      "name": "Dark Souls Anor Londo Grand Staircase",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "dark_souls_anor_londo_grand_staircase.webp",
+      "text": "Dark Souls style Anor Londo, monumental pale stone staircase, slender cathedral buttresses above the parapets, distant towers at the same dizzying height, long golden shadows beneath an amber sky",
+      "tags": "scenery, grand_staircase, cathedral_buttresses, amber_sky",
+      "searchTags": [
+        "アノール・ロンドの大階段",
+        "ダークソウル",
+        "アノール",
+        "ロンドの大階段"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "dark_souls_blighttown_timber_platforms",
+      "name": "Dark Souls Blighttown Timber Platforms",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "dark_souls_blighttown_timber_platforms.webp",
+      "text": "Dark Souls style Blighttown, narrow uneven plank platform, rope lashings around crooked posts, ladders between stacked shacks, dim torchlight above a deep green swamp",
+      "tags": "scenery, plank_platform, stacked_shacks, green_swamp",
+      "searchTags": [
+        "病み村の足場",
+        "ダークソウル"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "dark_souls_ash_lake_sandbar",
+      "name": "Dark Souls Ash Lake Sandbar",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "dark_souls_ash_lake_sandbar.webp",
+      "text": "Dark Souls style Ash Lake, narrow strip of pale sand between still dark waters, colossal ancient tree trunks beyond the shore, layers of blue mist beneath a distant canopy, faint pearly light on the lake",
+      "tags": "scenery, pale_sandbar, ancient_trees, dark_water",
+      "searchTags": [
+        "灰の湖の白い砂州",
+        "ダークソウル"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "gta_san_andreas_grove_street",
+      "name": "GTA San Andreas Grove Street",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "gta_san_andreas_grove_street.webp",
+      "text": "GTA San Andreas style Grove Street cul-de-sac, circular patch of sun-faded asphalt, low wooden houses with shallow front porches, tall palms, concrete overpass beyond the rooftops, warm Los Santos haze",
+      "tags": "scenery, suburban_cul-de-sac, low_houses, concrete_overpass",
+      "searchTags": [
+        "サンアンドレアス｜グローブ・ストリートの袋小路",
+        "グランドセフトオート",
+        "GTA",
+        "サンアンドレアス",
+        "グローブ",
+        "ストリートの袋小路"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "gta_vice_city_ocean_drive",
+      "name": "GTA Vice City Ocean Drive",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "gta_vice_city_ocean_drive.webp",
+      "text": "GTA Vice City style Ocean Drive at night, pastel Art Deco hotel fronts, pink and turquoise neon along rounded balconies, palm shadows across the sidewalk, dark beachfront across the boulevard",
+      "tags": "scenery, Art_Deco_hotels, neon_balconies, palm_shadows",
+      "searchTags": [
+        "バイスシティ｜夜のオーシャン・ドライブ",
+        "グランドセフトオート",
+        "GTA",
+        "バイスシティ",
+        "夜のオーシャン",
+        "ドライブ"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "gta_iv_star_junction",
+      "name": "GTA IV Star Junction",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "gta_iv_star_junction.webp",
+      "text": "GTA IV style Star Junction at street level, wedge-shaped intersection between tall buildings, stacked illuminated billboards, metal subway entrance railings, white crosswalk stripes on rain-dark Manhattan-style asphalt",
+      "tags": "scenery, city_intersection, illuminated_billboards, subway_entrance",
+      "searchTags": [
+        "GTA IV｜リバティーシティのスター・ジャンクション",
+        "グランドセフトオート",
+        "GTA",
+        "GTA IV",
+        "リバティーシティのスター",
+        "ジャンクション"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "gta_v_del_perro_pier",
+      "name": "GTA V Del Perro Pier",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "gta_v_del_perro_pier.webp",
+      "text": "GTA V style Del Perro Pier at sunset, weathered timber boardwalk above the Pacific, red roller coaster rails along one edge, Ferris wheel beyond the ticket booths, orange light between the planks",
+      "tags": "scenery, timber_boardwalk, coaster_rails, Ferris_wheel",
+      "searchTags": [
+        "GTA V｜デル・ペロの遊園地桟橋",
+        "グランドセフトオート",
+        "GTA",
+        "GTA V",
+        "デル",
+        "ペロの遊園地桟橋"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "gta_v_sandy_shores_trailer_lot",
+      "name": "GTA V Sandy Shores Trailer Lot",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "gta_v_sandy_shores_trailer_lot.webp",
+      "text": "GTA V style Sandy Shores trailer lot, dusty gravel road, sun-bleached mobile homes behind chain-link fences, crooked utility poles, pale strip of the Alamo Sea beneath dry mountains",
+      "tags": "scenery, desert_trailer_lot, gravel_road, dry_mountains",
+      "searchTags": [
+        "GTA V｜サンディ海岸のトレーラー街",
+        "グランドセフトオート",
+        "GTA",
+        "GTA V",
+        "サンディ海岸のトレーラー街"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "world_of_tanks_himmelsdorf_castle_hill",
+      "name": "World of Tanks Himmelsdorf Castle Hill",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "world_of_tanks_himmelsdorf_castle_hill.webp",
+      "text": "World of Tanks Himmelsdorf map, broad cobblestone square between damaged European townhouses, rubble along the curbs, steep side street beneath a hilltop castle, cool overcast daylight",
+      "tags": "scenery, cobblestone_street, hilltop_castle, stone_facades",
+      "searchTags": [
+        "ヒメルズドルフ｜丘の城を望む石畳",
+        "ワールドオブタンクス",
+        "WoT",
+        "ヒメルズドルフ",
+        "丘の城を望む石畳"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "world_of_tanks_malinovka_windmill",
+      "name": "World of Tanks Malinovka Windmill",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "world_of_tanks_malinovka_windmill.webp",
+      "text": "World of Tanks Malinovka map, open grass field with faint parallel track marks, weathered farm buildings at the near edge, scattered birches, solitary windmill above the distant ridge",
+      "tags": "scenery, open_field, grassy_ridge, windmill",
+      "searchTags": [
+        "マリノフカ｜大平原と丘の風車",
+        "ワールドオブタンクス",
+        "WoT",
+        "マリノフカ",
+        "大平原と丘の風車"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "world_of_tanks_el_halluf_valley",
+      "name": "World of Tanks El Halluf Valley",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "world_of_tanks_el_halluf_valley.webp",
+      "text": "World of Tanks El Halluf map, pale limestone ledge above a wide desert valley, dry streambed between low adobe houses, dusty switchbacks on the opposite slope, hard midday shadows",
+      "tags": "scenery, desert_ledge, dry_streambed, adobe_houses",
+      "searchTags": [
+        "エル・ハルフ｜岩棚から見下ろす谷",
+        "ワールドオブタンクス",
+        "WoT",
+        "エル",
+        "ハルフ",
+        "岩棚から見下ろす谷"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "xevious_forest_and_river",
+      "name": "Xevious Forest and River",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "xevious_forest_and_river.webp",
+      "text": "classic Xevious arcade terrain, directly overhead view, vertical pixel art playfield, dense dark green forest tiles, bright blue river with angular banks, narrow gray road through a patch of light green grass",
+      "tags": "scenery, overhead_pixel_terrain, dark_green_forest, blue_river",
+      "searchTags": [
+        "緑の森林帯と青い川",
+        "ゼビウス",
+        "ドット絵"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "xevious_nazca_geoglyph",
+      "name": "Xevious Nazca Geoglyph",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "xevious_nazca_geoglyph.webp",
+      "text": "classic Xevious arcade terrain, directly overhead view, enormous pale bird geoglyph across flat ochre ground, long straight beak and angular wings in thin pixel lines, dark green terrain at the outer edges",
+      "tags": "scenery, overhead_arcade_terrain, pale_geoglyph, ochre_ground",
+      "searchTags": [
+        "ナスカの鳥の地上絵",
+        "ゼビウス",
+        "ドット絵"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "redneck_rampage_taylor_town_backstreet",
+      "name": "Redneck Rampage Taylor Town Backstreet",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "redneck_rampage_taylor_town_backstreet.webp",
+      "text": "Redneck Rampage style Taylor Town backstreet, unobstructed first-person view, low brick storefronts beside a gravel shoulder, sagging power lines, faded roadside signs, coarse 1990s textures beneath a flat gray sky",
+      "tags": "scenery, brick_storefronts, gravel_shoulder, faded_signs",
+      "searchTags": [
+        "テイラー・タウン｜田舎町の裏通り",
+        "レッドネックランページ",
+        "テイラー",
+        "タウン",
+        "田舎町の裏通り"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "redneck_rampage_lumberland_mill",
+      "name": "Redneck Rampage Lumberland Mill",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "redneck_rampage_lumberland_mill.webp",
+      "text": "Redneck Rampage style Lumberland sawmill, first-person view down a narrow lumber aisle, tall stacks of rough-cut planks, corrugated metal shed, sawdust on packed earth, blocky timber geometry and grainy wood textures",
+      "tags": "scenery, lumber_aisle, stacks_of_planks, sawmill_shed",
+      "searchTags": [
+        "ランバーランド｜製材所の板材置き場",
+        "レッドネックランページ",
+        "ランバーランド",
+        "製材所の板材置き場"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "wizardry_apple_ii_wireframe_maze",
+      "name": "Wizardry Apple II Wireframe Maze",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "wizardry_apple_ii_wireframe_maze.webp",
+      "text": "original Apple II Wizardry dungeon view, full-frame first-person wireframe maze, pure black field, thin monochrome lines, short corridor with a blank end wall, rectangular opening on the right, stark one-point perspective",
+      "tags": "scenery, wireframe_corridor, black_field, monochrome_lines",
+      "searchTags": [
+        "『狂王の試練場』のワイヤーフレーム迷宮",
+        "ウィザードリィ",
+        "狂王の試練場"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "diablo_tristram_village_well",
+      "name": "Diablo Tristram Village Well",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "diablo_tristram_village_well.webp",
+      "text": "classic Diablo Tristram village, fixed isometric view, dirt square around a low stone well, timber smithy with an orange forge, patchy grass beside crooked fences, muted earth tones and grainy pre-rendered scenery",
+      "tags": "scenery, isometric_village, stone_well, timber_smithy",
+      "searchTags": [
+        "トリストラム｜井戸と鍛冶場のある村の広場",
+        "ディアブロ",
+        "アイソメトリック",
+        "トリストラム",
+        "井戸と鍛冶場のある村の広場"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "diablo_cathedral_pillar_aisle",
+      "name": "Diablo Cathedral Pillar Aisle",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "diablo_cathedral_pillar_aisle.webp",
+      "text": "classic Diablo cathedral dungeon, fixed isometric view, diagonal aisle of gray flagstones, square Gothic pillars, iron candle stands in shallow wall recesses, small pools of amber light amid deep black shadow",
+      "tags": "scenery, isometric_cathedral, flagstone_aisle, candle_stands",
+      "searchTags": [
+        "大聖堂地下｜石柱と燭台の回廊",
+        "ディアブロ",
+        "アイソメトリック",
+        "大聖堂地下",
+        "石柱と燭台の回廊"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "diablo_caves_lava_bridge",
+      "name": "Diablo Caves Lava Bridge",
+      "group": "Fantasy & Sci-Fi",
+      "thumbnail": "diablo_caves_lava_bridge.webp",
+      "text": "classic Diablo caves, fixed isometric view, narrow plank bridge across a bright lava channel, jagged black rock ledges at either end, rough timber supports, red light along the underside of the stone",
+      "tags": "scenery, isometric_cavern, plank_bridge, lava_channel",
+      "searchTags": [
+        "地下洞窟｜溶岩を渡る細い木橋",
+        "ディアブロ",
+        "アイソメトリック",
+        "地下洞窟",
+        "溶岩を渡る細い木橋"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "weathered_single_wide_front_porch",
+      "name": "Weathered Single-Wide Front Porch",
+      "group": "Outdoor",
+      "thumbnail": "weathered_single_wide_front_porch.webp",
+      "text": "older American single-wide mobile home, long low roof above faded cream aluminum siding, metal skirting along the base, three wooden steps to a screened front door, narrow grass strip beside a gravel driveway",
+      "tags": "scenery, mobile_home_exterior, screen_door, metal_skirting",
+      "searchTags": [
+        "一軒のトレーラーハウス｜玄関先",
+        "トレーラーハウス",
+        "米国",
+        "モービルホーム",
+        "一軒のトレーラーハウス",
+        "玄関先"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "american_mobile_home_park_lane",
+      "name": "American Mobile Home Park Lane",
+      "group": "Outdoor",
+      "thumbnail": "american_mobile_home_park_lane.webp",
+      "text": "older American mobile home park, narrow paved lane with shallow grassy verges, single-wide homes set close together, mismatched porch awnings and short driveways, mailboxes near the entrance, late afternoon shade from mature trees",
+      "tags": "scenery, residential_lane, single-wide_homes, mailbox_row",
+      "searchTags": [
+        "トレーラータウン｜住宅の並ぶ生活道路",
+        "トレーラーハウス",
+        "米国",
+        "モービルホーム",
+        "トレーラータウン",
+        "住宅の並ぶ生活道路"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "single_wide_open_plan_interior",
+      "name": "Single-Wide Open-Plan Interior",
+      "group": "Indoor",
+      "thumbnail": "single_wide_open_plan_interior.webp",
+      "text": "interior of an older American single-wide mobile home, narrow open-plan living room and kitchen, low ceiling, faded sofa beneath a wide front window, wood-paneled walls, worn carpet meeting kitchen linoleum halfway down the room",
+      "tags": "scenery, mobile_home_interior, narrow_living_room, wood_paneling",
+      "searchTags": [
+        "居間から台所まで｜細長い室内の全景",
+        "トレーラーハウス",
+        "米国",
+        "モービルホーム",
+        "居間から台所まで",
+        "細長い室内の全景"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "single_wide_kitchen_and_dinette",
+      "name": "Single-Wide Kitchen and Dinette",
+      "group": "Indoor",
+      "thumbnail": "single_wide_kitchen_and_dinette.webp",
+      "text": "modest mobile home kitchen, shallow laminate counter beneath a curtained window, stainless steel sink, cream gas range beside woodgrain cabinets, small two-seat table against the opposite wall, worn patterned linoleum",
+      "tags": "scenery, compact_kitchen, laminate_counter, two-seat_table",
+      "searchTags": [
+        "小さな台所｜流し台と食卓",
+        "トレーラーハウス",
+        "米国",
+        "モービルホーム",
+        "小さな台所",
+        "流し台と食卓"
+      ],
+      "promptFormat": "comma"
+    },
+    {
+      "id": "single_wide_rear_bedroom",
+      "name": "Single-Wide Rear Bedroom",
+      "group": "Indoor",
+      "thumbnail": "single_wide_rear_bedroom.webp",
+      "text": "compact rear bedroom in an older American mobile home, double bed beneath a low side window, faded patchwork quilt, narrow passage between the bed and a built-in closet, small bedside lamp against pale wood paneling",
+      "tags": "scenery, rear_bedroom, patchwork_quilt, wood-paneled_wall",
+      "searchTags": [
+        "奥の寝室｜ベッド脇の狭い通路",
+        "トレーラーハウス",
+        "米国",
+        "モービルホーム",
+        "奥の寝室",
+        "ベッド脇の狭い通路"
+      ],
       "promptFormat": "comma"
     }
   ]

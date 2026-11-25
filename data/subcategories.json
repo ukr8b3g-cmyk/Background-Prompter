@@ -233,7 +233,8 @@
       "lunar_base_private_room",
       "lunar_lander_cockpit",
       "orbital_spacecraft_exterior_repair",
-      "rotating_space_habitat_ring"
+      "rotating_space_habitat_ring",
+      "retro_anime_battleship_gauge_bridge"
     ]
   },
   "Fantasy worlds": {
@@ -682,7 +683,8 @@
       "lattice_shadows_on_plaster",
       "underwater_caustic_light",
       "underwater_ink_plumes",
-      "red_confetti_award_stage"
+      "red_confetti_award_stage",
+      "magical_girl_transformation_light_rings"
     ]
   },
   "Graphic and virtual worlds": {
@@ -871,7 +873,189 @@
     "ids": [
       "formula_car_pit_garage",
       "road_racing_motorcycle_pit_box",
-      "formula_starting_grid_slot"
+      "formula_starting_grid_slot",
+      "forza_horizon_mexican_mountain_pass",
+      "forza_horizon_guanajuato_tunnel",
+      "gran_turismo_suzuka_final_bend",
+      "gran_turismo_spa_eau_rouge",
+      "gran_turismo_trial_mountain_tunnel",
+      "gran_turismo_tokyo_expressway_at_night"
+    ]
+  },
+  "Desktop and software interfaces": {
+    "ja": "デスクトップ・ソフト画面",
+    "ids": [
+      "video_editing_timeline",
+      "node_graph_with_forest_preview",
+      "architectural_cad_floor_plan",
+      "classic_teal_pc_desktop",
+      "monochrome_macintosh_finder",
+      "nextstep_workstation_desktop",
+      "gnome_2_linux_desktop"
+    ]
+  },
+  "Kart and platform game worlds": {
+    "ja": "レース・アクションゲーム",
+    "ids": [
+      "mario_kart_seaside_circuit",
+      "super_mario_8_bit_overworld",
+      "super_mario_castle_grounds"
+    ]
+  },
+  "Classic RPG scenery": {
+    "ja": "クラシックRPGの風景",
+    "ids": [
+      "dragon_quest_castle_town",
+      "final_fantasy_side_battle_field",
+      "wizardry_apple_ii_wireframe_maze"
+    ]
+  },
+  "Arcade fighting stages": {
+    "ja": "アーケード格闘ステージ",
+    "ids": [
+      "street_fighter_castle_rooftop",
+      "street_fighter_market_lane",
+      "street_fighter_airbase_apron",
+      "street_fighter_fuji_bathhouse",
+      "street_fighter_palace_hall"
+    ]
+  },
+  "Dragon Quest landscapes": {
+    "ja": "ドラクエの風景",
+    "ids": [
+      "dragon_quest_xi_heliodor_grasslands",
+      "dragon_quest_xi_cobblestone_village",
+      "dragon_quest_xi_gallopolis_desert"
+    ]
+  },
+  "Adventure game worlds": {
+    "ja": "アドベンチャーゲーム",
+    "ids": [
+      "halo_infinite_ringworld_lakeshore",
+      "gears_of_war_ruined_boulevard",
+      "sea_of_thieves_outpost_jetty",
+      "fable_ii_bowerstone_old_town",
+      "uncharted_libertalia_cove",
+      "god_of_war_lake_of_nine_landing",
+      "god_of_war_alfheim_light_bridge"
+    ]
+  },
+  "First-person game environments": {
+    "ja": "FPSゲームの風景",
+    "ids": [
+      "operation_flashpoint_rural_crossroads",
+      "battlefield_wwii_village_square",
+      "battlefield_offshore_facility",
+      "doom_martian_refinery",
+      "redneck_rampage_taylor_town_backstreet",
+      "redneck_rampage_lumberland_mill"
+    ]
+  },
+  "NieR ruins": {
+    "ja": "ニーアの廃墟",
+    "ids": [
+      "nier_amusement_park_avenue",
+      "nier_flooded_city_road",
+      "nier_factory_furnace_catwalk"
+    ]
+  },
+  "Lineage II landscapes": {
+    "ja": "リネージュIIの風景",
+    "ids": [
+      "lineage_ii_aden_castle_staircase",
+      "lineage_ii_giran_siege_field",
+      "lineage_ii_elven_village_pool"
+    ]
+  },
+  "Island life game scenery": {
+    "ja": "島暮らしゲーム",
+    "ids": [
+      "animal_crossing_island_plaza",
+      "animal_crossing_airport_pier",
+      "animal_crossing_island_shop"
+    ]
+  },
+  "Asian fantasy game worlds": {
+    "ja": "中国ゲームの風景",
+    "ids": [
+      "genshin_liyue_harbor_at_night",
+      "genshin_wangshu_inn_terrace",
+      "honkai_astral_express_parlor_car",
+      "zenless_zone_zero_sixth_street_video_store"
+    ]
+  },
+  "Livestream rooms": {
+    "ja": "配信部屋",
+    "ids": [
+      "evening_chat_stream_living_room",
+      "daylight_review_stream_workbench",
+      "pastel_attic_vtuber_stream_layout"
+    ]
+  },
+  "Idol concert sets": {
+    "ja": "アイドルの舞台",
+    "ids": [
+      "idolmaster_small_theater_stage",
+      "idolmaster_heart_arch_tv_set",
+      "idolmaster_dome_center_stage"
+    ]
+  },
+  "Skydiving views": {
+    "ja": "スカイダイビング",
+    "ids": [
+      "sky_beyond_the_aircraft_door",
+      "river_valley_from_freefall_altitude"
+    ]
+  },
+  "Dark Souls landscapes": {
+    "ja": "ダークソウルの風景",
+    "ids": [
+      "dark_souls_anor_londo_grand_staircase",
+      "dark_souls_blighttown_timber_platforms",
+      "dark_souls_ash_lake_sandbar"
+    ]
+  },
+  "GTA streets and neighborhoods": {
+    "ja": "GTAの街並み",
+    "ids": [
+      "gta_san_andreas_grove_street",
+      "gta_vice_city_ocean_drive",
+      "gta_iv_star_junction",
+      "gta_v_del_perro_pier",
+      "gta_v_sandy_shores_trailer_lot"
+    ]
+  },
+  "World of Tanks landscapes": {
+    "ja": "ワールド・オブ・タンクスの風景",
+    "ids": [
+      "world_of_tanks_himmelsdorf_castle_hill",
+      "world_of_tanks_malinovka_windmill",
+      "world_of_tanks_el_halluf_valley"
+    ]
+  },
+  "Overhead arcade scenery": {
+    "ja": "縦スクロールアーケード",
+    "ids": [
+      "xevious_forest_and_river",
+      "xevious_nazca_geoglyph"
+    ]
+  },
+  "Isometric RPG scenery": {
+    "ja": "アイソメトリックRPG",
+    "ids": [
+      "diablo_tristram_village_well",
+      "diablo_cathedral_pillar_aisle",
+      "diablo_caves_lava_bridge"
+    ]
+  },
+  "American mobile homes": {
+    "ja": "アメリカのトレーラーハウス",
+    "ids": [
+      "weathered_single_wide_front_porch",
+      "american_mobile_home_park_lane",
+      "single_wide_open_plan_interior",
+      "single_wide_kitchen_and_dinette",
+      "single_wide_rear_bedroom"
     ]
   }
 }

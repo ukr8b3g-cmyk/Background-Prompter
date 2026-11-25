@@ -12,6 +12,7 @@
     const EVENT_KEY = `k2bg_event_v2:${scope}`;
     const ENABLED_PREF_KEY = `k2bg_enabled_v1:${scope}`;
     const LANGUAGE_PREF_KEY = `k2bg_language_v1:${scope}`;
+    const LIBRARY_VIEW_KEY = `k2bg_library_view_v1:${scope}`;
     const STANDALONE_HASH = "#background-prompter";
     const SETTINGS_VERSION = 2;
     const DRAWER_CARD_MIN = 130;
@@ -41,7 +42,6 @@
     let hostInstanceId = isStandalone ? link.get("page") || "" : instanceId;
     const channel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL_NAME) : null;
     const sharedVersions = { favorite: new Map(), recent: new Map() };
-    const navigationRoots = new WeakSet();
     let sharedClock = 0;
     let sharedLoaded = false;
 
@@ -891,6 +891,39 @@
     const SORT_MODES = ["sortDefault", "sortNewest", "sortName", "sortNameReverse", "sortCategory"];
     let shuffleRanks = null;
 
+    function rememberLibraryView() {
+        const { page, query, group, view, drawerQuery, drawerGroup, drawerView, drawerLimit,
+            countMode, customCount, sortMode } = state;
+        const json = JSON.stringify({ page, query, group, view, drawerQuery, drawerGroup, drawerView,
+            drawerLimit, countMode, customCount, sortMode, shuffleRanks: shuffleRanks && [...shuffleRanks] });
+        try {
+            sessionStorage.setItem(LIBRARY_VIEW_KEY, json);
+            localStorage.setItem(LIBRARY_VIEW_KEY, json);
+        } catch { /* Browsing still works in memory if storage is unavailable. */ }
+    }
+
+    function restoreLibraryView() {
+        try {
+            const saved = JSON.parse(sessionStorage.getItem(LIBRARY_VIEW_KEY) || localStorage.getItem(LIBRARY_VIEW_KEY) || "null");
+            if (!saved) return;
+            for (const key of ["query", "group", "drawerQuery", "drawerGroup"]) {
+                if (typeof saved[key] === "string") state[key] = saved[key];
+            }
+            for (const key of ["view", "drawerView"]) {
+                if (["all", "recent", "favorites"].includes(saved[key])) state[key] = saved[key];
+            }
+            if (Number.isSafeInteger(saved.page) && saved.page >= 0) state.page = saved.page;
+            if (Number.isSafeInteger(saved.drawerLimit) && saved.drawerLimit > 0) state.drawerLimit = saved.drawerLimit;
+            if (Number.isSafeInteger(saved.customCount) && saved.customCount > 0) state.customCount = saved.customCount;
+            if (["40", "80", "custom", "all"].includes(saved.countMode)) state.countMode = saved.countMode;
+            if (SORT_MODES.includes(saved.sortMode)) state.sortMode = saved.sortMode;
+            if (Array.isArray(saved.shuffleRanks) && saved.shuffleRanks.every(rank =>
+                Array.isArray(rank) && typeof rank[0] === "string" && Number.isFinite(rank[1]))) {
+                shuffleRanks = new Map(saved.shuffleRanks);
+            }
+        } catch { /* Invalid saved view leaves the default library available. */ }
+    }
+
     function shufflePresets(drawer) {
         const visible = filteredPresets({ drawer });
         if (visible.length < 2) return;
@@ -906,6 +939,7 @@
         state.drawerLimit = displayCount();
         refreshFullApp();
         if (state.drawerOpen) renderDrawerGrid();
+        rememberLibraryView();
     }
 
     function filteredPresets({ drawer = false } = {}) {
@@ -1114,11 +1148,6 @@
     }
 
     function mountFullApp() {
-        const navigationRoot=appRoot();
-        if(typeof navigationRoot.addEventListener==='function' && !navigationRoots.has(navigationRoot)){
-            navigationRoots.add(navigationRoot);
-            navigationRoot.addEventListener('click',event=>{const tab=event.target.closest?.('#tabs > .tab-nav button');if(tab?.textContent.trim()===APP_TITLE)resetFullFilter();},true);
-        }
         const mount = appRoot().getElementById(APP_ID) || document.getElementById(APP_ID);
         if (!mount || (mount.dataset.ready === "true" && mount.dataset.language === uiLanguage)) return;
         mount.dataset.ready = "true";
@@ -1257,10 +1286,7 @@
 
     function openDrawer(target, opener) {
         state.target = target;
-        state.drawerView = 'all';
-        state.drawerLimit = displayCount();
-        state.drawerQuery = '';
-        state.drawerGroup = 'All categories';
+        state.drawerLimit = Math.max(state.drawerLimit, displayCount());
         state.drawerOpen = true;
         activeDrawerOpener = opener || document.activeElement;
         renderDrawer();
@@ -1453,15 +1479,6 @@
         }
     }
 
-    function resetFullFilter() {
-        if(state.view==='all' && state.page===0 && !state.query && state.group==='All categories') return;
-        state.view='all'; state.page=0; state.query=''; state.group='All categories';
-        const mount=appRoot().getElementById(APP_ID) || document.getElementById(APP_ID);
-        const search=mount?.querySelector('[data-k2bg-action="search"]'),category=mount?.querySelector('[data-k2bg-action="group"]');
-        if(search)search.value='';if(category)category.value='All categories';
-        refreshFullApp();
-    }
-
     function activateBackgroundTab() {
         const root = appRoot();
         const panel = root.getElementById("tab_background_prompter") || document.getElementById("tab_background_prompter");
@@ -1629,7 +1646,7 @@
         else if (action === "drawer-more") { state.drawerLimit += displayCount(); renderDrawerGrid(); }
         else if (action === "drawer") openDrawer(button.dataset.target, button);
         else if (action === "close") closeDrawer();
-        else if (action === "full") { resetFullFilter(); closeDrawer(); activateBackgroundTab(); }
+        else if (action === "full") { closeDrawer(); activateBackgroundTab(); }
         else if (action === "standalone") openStandalone();
         else if (action === "reconnect") reconnectHost({ discover: true });
         else if (action === "insert") requestInsert(button.dataset.target || state.target);
@@ -1637,6 +1654,7 @@
         else if (action === "reset") resetDraft();
         else if (action === "style-boost") changeStyleBoost(button.dataset.value);
         else if (action === "page") { state.page += button.dataset.page === "next" ? 1 : -1; refreshFullApp(); }
+        if (["page", "view", "drawer-view", "drawer-more"].includes(action)) rememberLibraryView();
     }
 
     function handleInput(event) {
@@ -1648,6 +1666,7 @@
         else if (action === "card-size") { state.cardSize = clamp(Number(event.target.value), 148, 228, 176); persistState(); refreshFullApp(); }
         else if (action === "page-range") goToPage(event.target.value);
         else if (event.target.matches("[data-k2bg-editor]")) updateDraft(event.target.value, event.target);
+        if (action === "search" || action === "drawer-search") rememberLibraryView();
     }
 
     function goToPage(value) {
@@ -1659,6 +1678,7 @@
         }
         state.page = Math.min(pageCount - 1, Math.max(0, requested - 1));
         refreshFullApp();
+        rememberLibraryView();
     }
 
     function handleChange(event) {
@@ -1688,6 +1708,7 @@
         }
         else if (action === "page-number") goToPage(event.target.value);
         else if (action === "profile") changeProfile(event.target.value);
+        if (["group", "drawer-group", "sort-mode", "count-mode", "custom-count"].includes(action)) rememberLibraryView();
     }
 
     function handleKeydown(event) {
@@ -1860,6 +1881,11 @@
         state.totalAvailable = Number(payload.total_available) || presets.length;
         subcategoryLabels = labels;
         subcategoryById = categories;
+        for (const key of ["group", "drawerGroup"]) {
+            if (state[key] !== "All categories" && !presets.some(p => p.group === state[key] || categoryPath(p) === state[key])) {
+                state[key] = "All categories";
+            }
+        }
         state.customCount = Math.min(state.customCount, presets.length);
         if (!presets.some(item => item.name === state.selectedName)) {
             hasSavedDraft = false;
@@ -1895,7 +1921,6 @@
             await loadPresets();
             thumbnailRevision = encodeURIComponent(newId());
             for (const [key, action] of [["group", "group"], ["drawerGroup", "drawer-group"]]) {
-                if (!state.presets.some(p => p.group === state[key] || categoryPath(p) === state[key])) state[key] = "All categories";
                 queryAll(`[data-k2bg-action="${action}"]`).forEach(select => { select.innerHTML = categoryOptions(state[key]); });
             }
             persistState();
@@ -1916,7 +1941,7 @@
         initializing = true;
         document.documentElement.dataset.k2bgInitialized = "loading";
         uiLanguage = detectUiLanguage();
-        if (!storedStateLoaded) { loadStoredState(); storedStateLoaded = true; }
+        if (!storedStateLoaded) { loadStoredState(); restoreLibraryView(); storedStateLoaded = true; }
         try {
             await loadPresets();
             mountFullApp();

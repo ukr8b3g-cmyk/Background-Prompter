@@ -5,13 +5,13 @@
 <img width="1794" height="1567" alt="Clip_5" src="https://github.com/user-attachments/assets/c938bd29-9520-431f-8d1c-65bfc0061591" />
 
 
-An image-backed background prompt picker for Forge Neo and ReForge. **It includes 1,016 background presets with preview images.** Browse visually, generate a model-aware prompt, edit it, and insert it into txt2img or img2img.
+An image-backed background prompt picker for Forge Neo and ReForge. **It includes 1,100 background presets with preview images.** Browse visually, generate a model-aware prompt, edit it, and insert it into txt2img or img2img.
 
 **v1.2.0** adds 421 backgrounds, searchable tags, subcategories, sorting, hover previews and a catalog reload button. See the [release notes](RELEASE_NOTES.md). After updating, reload the original WebUI and reopen its picker tabs using the same browser profile and WebUI address to retain browser data.
 
 ## Features
 
-- Browse 1,016 backgrounds by image, search, category, favorites, or recent use
+- Browse 1,100 backgrounds by image, search, category, favorites, or recent use
 - Jump directly to any page with the page slider or page number
 - Full tab, compact prompt bars, and a resizable side panel
 - Adjustable thumbnail size
@@ -73,7 +73,7 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 ## Notes
 
 - Supported WebUIs: Forge Neo and ReForge
-- Opening the regular tab or side panel, or opening/reloading a browser picker, clears Search and selects All categories and All so browsing starts with every background. The filter order is All → Recent → Favorites in every view.
+- The library remembers your search, category, page and sort order, including shuffled order. The side panel remembers its own search and filters.
 - Prompt insertion occurs at the current cursor position; inserting identical content repeatedly creates duplicates
 - Changing the background or output format while an edit is in progress prompts you for confirmation before discarding it
 - Favorites, recent items, thumbnail size, panel width, and Style Boost are stored in the browser
@@ -90,13 +90,13 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 <img width="1794" height="1567" alt="Background Prompterの画面" src="https://github.com/user-attachments/assets/6bc0656e-0ede-4fdc-9b6b-3f36ca233c00" />
 
 
-Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**画像付き背景プリセットを1,016件収録**しています。背景を画像で選び、モデルに合わせたプロンプトを編集してtxt2img / img2imgへ挿入できます。
+Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**画像付き背景プリセットを1,100件収録**しています。背景を画像で選び、モデルに合わせたプロンプトを編集してtxt2img / img2imgへ挿入できます。
 
 **v1.2.0** では、背景421件と、検索タグ、サブカテゴリー、並べ替え、原寸プレビュー、プリセット再読み込みを追加しました。[更新内容](RELEASE_NOTES.md)。ブラウザー内のデータを引き継ぐには、更新後も同じプロファイルとWebUIアドレスを使い、元のWebUIを再読み込みしてピッカーを開き直してください。
 
 ### 主な機能
 
-- 1,016件を画像、検索、カテゴリ、お気に入り、最近使用から選択
+- 1,100件を画像、検索、カテゴリ、お気に入り、最近使用から選択
 - 上下のページスライダーまたはページ番号入力で任意ページへ直接移動
 - 通常タブ、コンパクトバー、幅を変えられるサイドパネルに対応
 - サムネイルサイズを調整可能
@@ -160,7 +160,7 @@ https://github.com/ukr8b3g-cmyk/Background-Prompter
 ### 注意
 
 - 対象はForge Neo / ReForgeです。
-- 通常タブ・サイドパネルを開いたとき、別タブを新規に開いたとき・再読み込みしたときは、検索を空欄、カテゴリをAll categories、表示をAllに戻し、全件表示から始めます。並びは全画面で「すべて → 最近使用 → お気に入り」です。
+- 一覧は検索語、カテゴリー、ページ番号、シャッフルを含む並び順を記憶します。サイドパネルの検索語と絞り込みも個別に記憶します。
 - 挿入は現在のカーソル位置です。同じ内容を繰り返し挿入すると重複します。
 - 編集中に背景または出力形式を変える場合は、破棄確認が表示されます。
 - お気に入り、最近使用、サムネイルサイズ、パネル幅、Style Boostはブラウザー内に保存されます。
