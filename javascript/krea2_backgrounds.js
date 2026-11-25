@@ -11,6 +11,7 @@
     const SHARED_OP_PREFIX = `k2bg_shared_op_v3:${scope}:`;
     const EVENT_KEY = `k2bg_event_v2:${scope}`;
     const ENABLED_PREF_KEY = `k2bg_enabled_v1:${scope}`;
+    const LANGUAGE_PREF_KEY = `k2bg_language_v1:${scope}`;
     const STANDALONE_HASH = "#background-prompter";
     const SETTINGS_VERSION = 2;
     const DRAWER_CARD_MIN = 130;
@@ -49,10 +50,14 @@
             enable: "Enable",
             disabled: "Insertion is disabled by Enable on the original WebUI bar. The selected background and draft are kept.",
             appSubtitle: "{count} background presets",
+            background: "Background",
+            backgroundFilter: "Background filter",
             standalone: "Open in browser tab",
             search: "Search",
             reloadPresets: "Reload presets",
             sortBy: "Sort by",
+            shuffle: "Shuffle",
+            shuffled: "Shuffled",
             sortDefault: "Added (oldest first)",
             sortRecent: "Recently used",
             sortNewest: "Added (newest first)",
@@ -138,10 +143,14 @@
             enable: "有効",
             disabled: "元のWebUIの外側バーで有効がOFFになっています。選択中の背景と編集内容は保持しています。",
             appSubtitle: "背景プリセット{count}件",
+            background: "背景",
+            backgroundFilter: "背景の絞り込み",
             standalone: "別ブラウザータブで開く",
             search: "検索",
             reloadPresets: "プリセット再読み込み",
             sortBy: "並べ替え",
+            shuffle: "シャッフル",
+            shuffled: "ランダム順",
             sortDefault: "登録順（古い順）",
             sortRecent: "最近使った順",
             sortNewest: "登録順（新しい順）",
@@ -314,6 +323,10 @@
     }
 
     function detectUiLanguage() {
+        try {
+            const saved = localStorage.getItem(LANGUAGE_PREF_KEY);
+            if (saved === "ja" || saved === "en") return saved;
+        } catch { /* Fall back to the Forge language when browser storage is unavailable. */ }
         const selected = String(forgeOptions().localization ?? "None").trim();
         if (!selected || selected.toLowerCase() === "none") return "en";
         return /(^|[-_. ])(ja|jp)([-_. ]|$)|japanese|日本/i.test(selected) ? "ja" : "en";
@@ -336,6 +349,26 @@
             "Fantasy & Sci-Fi": "groupFantasy",
         };
         return keys[group] ? t(keys[group]) : group;
+    }
+
+    function languageButton() {
+        const japanese = uiLanguage === "ja";
+        return `<button type="button" class="k2bg-secondary" data-k2bg-action="language"
+            lang="${japanese ? "en" : "ja"}" title="${japanese ? "Switch to English" : "日本語に切り替え"}">${japanese ? "English" : "日本語"}</button>`;
+    }
+
+    function switchLanguage(button) {
+        const region = button.closest(".k2bg-drawer-host") || button.closest(`[id="${APP_ID}"]`);
+        uiLanguage = uiLanguage === "ja" ? "en" : "ja";
+        try { localStorage.setItem(LANGUAGE_PREF_KEY, uiLanguage); }
+        catch { /* The choice still applies to the current page. */ }
+        mountFullApp();
+        ensureCompactBars();
+        if (state.drawerOpen) {
+            renderDrawer();
+            activeDrawerOpener = queryAll(`[data-k2bg-action="drawer"][data-target="${state.target}"]`)[0];
+        }
+        region?.querySelector('[data-k2bg-action="language"]')?.focus({ preventScroll: true });
     }
 
     function clamp(value, minimum, maximum, fallback) {
@@ -856,6 +889,24 @@
     }
 
     const SORT_MODES = ["sortDefault", "sortNewest", "sortName", "sortNameReverse", "sortCategory"];
+    let shuffleRanks = null;
+
+    function shufflePresets(drawer) {
+        const visible = filteredPresets({ drawer });
+        if (visible.length < 2) return;
+        shuffleRanks = new Map(state.presets.map(item => [item.name, Math.random()]));
+        const ordered = filteredPresets({ drawer });
+        if (visible[0] === ordered[0]) {
+            const [first, second] = ordered;
+            const rank = shuffleRanks.get(first.name);
+            shuffleRanks.set(first.name, shuffleRanks.get(second.name));
+            shuffleRanks.set(second.name, rank);
+        }
+        state.page = 0;
+        state.drawerLimit = displayCount();
+        refreshFullApp();
+        if (state.drawerOpen) renderDrawerGrid();
+    }
 
     function filteredPresets({ drawer = false } = {}) {
         const words = normalizeSearch(drawer ? state.drawerQuery : state.query).trim().split(/\s+/).filter(Boolean);
@@ -875,6 +926,7 @@
                 || (view === "recent" && state.recent.includes(item.name));
             return matchesGroup && matchesView;
         });
+        if (shuffleRanks) return items.sort((a, b) => (shuffleRanks.get(a.name) ?? 1) - (shuffleRanks.get(b.name) ?? 1));
         if (state.sortMode === "sortDefault") {
             return view === "recent" ? items.sort((a, b) => state.recent.indexOf(a.name) - state.recent.indexOf(b.name)) : items;
         }
@@ -987,7 +1039,7 @@
             ${compact ? "" : `<img class="k2bg-detail-image" src="${thumbUrl(preset)}" alt="">`}
             <label class="k2bg-field">
                 <span>${t("outputFormat")}</span>
-                <select data-k2bg-action="profile" aria-label="Prompt output format">${profileOptions()}</select>
+                <select data-k2bg-action="profile" aria-label="${t("outputFormat")}">${profileOptions()}</select>
             </label>
             <p class="k2bg-profile-note">${escapeHtml(profileLabel())}</p>
             <label class="k2bg-field k2bg-editor-field">
@@ -1072,15 +1124,16 @@
             navigationRoot.addEventListener('click',event=>{const tab=event.target.closest?.('#tabs > .tab-nav button');if(tab?.textContent.trim()===APP_TITLE)resetFullFilter();},true);
         }
         const mount = appRoot().getElementById(APP_ID) || document.getElementById(APP_ID);
-        if (!mount || mount.dataset.ready === "true") return;
+        if (!mount || (mount.dataset.ready === "true" && mount.dataset.language === uiLanguage)) return;
         mount.dataset.ready = "true";
+        mount.dataset.language = uiLanguage;
         mount.innerHTML = `
             <section class="k2bg-shell">
                 ${isStandalone ? `<p class="k2bg-notice" data-k2bg-connection role="status">${escapeHtml(t(connectionStatus))}</p>` : ""}
                 <header class="k2bg-titlebar">
-                    <div class="k2bg-titlecopy"><h1>${APP_TITLE}</h1><span data-k2bg-subtitle>${t("appSubtitle", { count: state.totalAvailable })}</span></div>
+                    <div class="k2bg-titlecopy"><h1>${APP_TITLE}</h1><span data-k2bg-subtitle></span></div>
                     <div class="k2bg-titlebar-controls">
-                        <div class="k2bg-scope-controls">${styleBoostMarkup()}</div>
+                        <div class="k2bg-scope-controls">${styleBoostMarkup()}${languageButton()}</div>
                         <div class="k2bg-top-actions k2bg-titlebar-actions">
                             ${editorActionMarkup()}
                             <button type="button" class="k2bg-secondary" data-k2bg-action="standalone">${t("standalone")}</button>
@@ -1089,8 +1142,8 @@
                 </header>
                 <div class="k2bg-toolbar">
                     <label class="k2bg-search"><span>${t("search")}</span><input type="search" data-k2bg-action="search" placeholder="${t("searchPlaceholder")}" autocomplete="off"></label>
-                    <label class="k2bg-field k2bg-category"><span>${t("category")}</span><select data-k2bg-action="group" aria-label="Background category"></select></label>
-                    <div class="k2bg-segments" aria-label="Background filter">
+                    <label class="k2bg-field k2bg-category"><span>${t("category")}</span><select data-k2bg-action="group" aria-label="${t("category")}"></select></label>
+                    <div class="k2bg-segments" aria-label="${t("backgroundFilter")}">
                         <button type="button" data-k2bg-action="view" data-view="all">${t("all")}</button>
                         <button type="button" data-k2bg-action="view" data-view="recent">${t("recent")}</button>
                         <button type="button" data-k2bg-action="view" data-view="favorites">${t("favorites")}</button>
@@ -1109,8 +1162,8 @@
         category.innerHTML = categoryOptions(state.group);
         category.value = state.group;
         mount.querySelector('[data-k2bg-action="search"]').value = state.query;
+        bindCardPreview(mount.querySelector(".k2bg-shell"));
         if (mount.dataset.listenersReady !== "true") {
-            bindCardPreview(mount.querySelector(".k2bg-shell"));
             mount.addEventListener("click", handleAction);
             mount.addEventListener("input", handleInput);
             mount.addEventListener("change", handleChange);
@@ -1125,13 +1178,13 @@
         if (!mount || mount.dataset.ready !== "true") return;
         const filtered = filteredPresets();
         const pageSize = displayCount();
-        refreshCountControls(mount);
+        refreshCountControls(mount, filtered.length);
         const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
         state.page = Math.min(state.page, pageCount - 1);
         const start = state.page * pageSize;
         const visible = filtered.slice(start, start + pageSize);
         const pagination = pageCount > 1
-            ? `<nav class="k2bg-pagination" aria-label="Background pages">
+            ? `<nav class="k2bg-pagination" aria-label="${t("page")}">
                 <button type="button" data-k2bg-action="page" data-page="prev"${state.page === 0 ? " disabled" : ""}>${t("previous")}</button>
                 <input class="k2bg-page-range" type="range" min="1" max="${pageCount}" step="1" value="${state.page + 1}" data-k2bg-action="page-range" aria-label="${t("pageJump")}">
                 <label class="k2bg-page-jump"><span>${t("page")}</span><input type="number" min="1" max="${pageCount}" step="1" value="${state.page + 1}" data-k2bg-action="page-number" aria-label="${t("pageJump")}"><span>/ ${pageCount}</span></label>
@@ -1156,7 +1209,7 @@
         if (!preset) return "";
         const inserted = state.inserted[target]?.name === preset.name && state.inserted[target]?.text === state.draft;
         return `
-            <span class="k2bg-bar-label">Background</span>
+            <span class="k2bg-bar-label">${t("background")}</span>
             <img src="${thumbUrl(preset)}" alt="">
             <span class="k2bg-bar-copy"><strong>${escapeHtml(preset.name)}</strong><small>${inserted ? t("lastInserted") : t("notInserted")}</small></span>
             <span class="k2bg-bar-spacer"></span>
@@ -1248,7 +1301,7 @@
         const grid = host.querySelector("[data-k2bg-drawer-grid]");
         if (!grid) return;
         const filtered = filteredPresets({ drawer: true });
-        refreshCountControls(host);
+        refreshCountControls(host, filtered.length);
         const count=host.querySelector('[data-k2bg-library-count]');
         if(count) count.textContent=`${filtered.length} / ${state.totalAvailable}`;
         const visible = filtered.slice(0, state.drawerLimit);
@@ -1302,7 +1355,7 @@
                 <div class="k2bg-drawer-resizer" role="separator" aria-orientation="vertical" aria-label="${t("resizeDrawer")}" tabindex="0"></div>
                 <div class="k2bg-drawer-top">
                     <header><div><span>${t("quickBackgrounds")}</span><h2 id="k2bg-drawer-title">${state.target}</h2></div><button type="button" class="k2bg-secondary" data-k2bg-action="close">${t("close")}</button></header>
-                    <div class="k2bg-scope-controls">${styleBoostMarkup("k2bg-drawer-style-boost")}</div>
+                    <div class="k2bg-scope-controls">${languageButton()}${styleBoostMarkup("k2bg-drawer-style-boost")}</div>
                     <div class="k2bg-top-actions k2bg-drawer-actions">${editorActionMarkup({ compact: true })}</div>
                 </div>
                 <div class="k2bg-drawer-toolbar">
@@ -1345,8 +1398,10 @@
             <label><span>${t("sortBy")}</span>
                 <select data-k2bg-action="sort-mode">
                     ${SORT_MODES.map(key => `<option value="${key}">${t(key)}</option>`).join("")}
+                    <option value="shuffled" disabled hidden>${t("shuffled")}</option>
                 </select>
             </label>
+            <button type="button" class="k2bg-secondary" data-k2bg-action="shuffle">${t("shuffle")}</button>
             <button type="button" class="k2bg-secondary k2bg-reload" data-k2bg-action="reload-presets"
                 title="${reloadLabel}" aria-label="${reloadLabel}"${reloading ? " disabled" : ""}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1363,12 +1418,13 @@
         return Number(state.countMode);
     }
 
-    function refreshCountControls(root) {
+    function refreshCountControls(root, resultCount) {
         const mode = root.querySelector('[data-k2bg-action="count-mode"]');
         if (!mode) return;
         mode.value = state.countMode;
         const sort = root.querySelector('[data-k2bg-action="sort-mode"]');
-        sort.value = state.sortMode;
+        sort.value = shuffleRanks ? "shuffled" : state.sortMode;
+        root.querySelector('[data-k2bg-action="shuffle"]').disabled = resultCount < 2;
         const view = root.classList.contains("k2bg-drawer-host") ? state.drawerView : state.view;
         sort.options[0].textContent = t(view === "recent" ? "sortRecent" : "sortDefault");
         const slider = root.querySelector('[data-k2bg-action="custom-count"]');
@@ -1572,7 +1628,9 @@
         const button = event.target.closest("[data-k2bg-action]");
         if (!button || ["INPUT", "SELECT", "TEXTAREA"].includes(button.tagName)) return;
         const action = button.dataset.k2bgAction;
+        if (action === "language") return switchLanguage(button);
         if (action === "reload-presets") return reloadPresets();
+        if (action === "shuffle") return shufflePresets(Boolean(button.closest(".k2bg-drawer-host")));
         if (action === "select") selectPreset(button.dataset.name);
         else if (action === "favorite") toggleFavorite(button.dataset.name);
         else if (action === "view") { state.view = button.dataset.view; state.page = 0; refreshFullApp(); }
@@ -1619,6 +1677,7 @@
         else if (action === "group") { state.group = event.target.value; state.page = 0; refreshFullApp(); }
         else if (action === "drawer-group") { state.drawerGroup = event.target.value; state.drawerLimit = displayCount(); persistState(); renderDrawerGrid(); }
         else if (action === "sort-mode") {
+            shuffleRanks = null;
             state.sortMode = event.target.value;
             state.page = 0;
             state.drawerLimit = displayCount();
