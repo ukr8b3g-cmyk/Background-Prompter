@@ -183,7 +183,7 @@ async function main() {
             const b = await create(`${origin}/neo/?mode=${mode}&preset=flux`, browserContextId);
             const otherBase = await create(`${origin}/reforge/?mode=${mode}&preset=flux`, browserContextId);
             await Promise.all([a.ready(), b.ready(), otherBase.ready()]);
-            await a.click('#k2bg-txt2img-bar [data-k2bg-action="enabled"]');
+            assert.equal(await a.eval('__test.state.enabled'), false);
             await a.click('[data-k2bg-action="standalone"]');
             let pickerTarget;
             await until(async () => {

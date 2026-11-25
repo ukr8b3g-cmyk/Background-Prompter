@@ -37,39 +37,42 @@ test('A new tab restores the last explicit Enable choice for this WebUI path', a
 });
 
 for (const mode of ['channel','storage']) {
-    test(`${mode}: OFF blocks direct insertion, keeps selection and draft, persists through reload`, async () => {
+    test(`${mode}: OFF permits direct insertion, keeps selection and draft, persists through reload`, async () => {
         const w=world(mode), host=w.page(); await host.load();
         host.api.updateDraft('edited background',null);
         const before={name:host.api.state.selectedName,draft:host.api.state.draft,generated:host.api.state.generated,dirty:host.api.state.dirty};
         host.input('txt2img').value='original';
         host.api.setEnabled(false);
         host.api.requestInsert('txt2img');
-        assert.equal(host.api.insertIntoPrompt('img2img','test'),false);
-        assert.equal(host.input('txt2img').value,'original');
-        assert.equal(host.input('img2img').value,'');
+        assert.equal(host.api.insertIntoPrompt('img2img','test'),true);
+        assert.match(host.input('txt2img').value,/^edited background[\s,]+original$/);
+        assert.equal(host.input('img2img').value,'test');
         assert.deepEqual({name:host.api.state.selectedName,draft:host.api.state.draft,generated:host.api.state.generated,dirty:host.api.state.dirty},before);
         const reload=w.page({session:host.session}); reload.api.loadStoredState();
         assert.equal(reload.api.state.enabled,false); assert.equal(reload.api.state.draft,'edited background');
         host.api.setEnabled(true); assert.equal(host.api.insertIntoPrompt('img2img','test'),true);
     });
 
-    test(`${mode}: picker sync and late requests honor current host Enable; cached rejection is not replayed`, async () => {
-        const w=world(mode),host=w.page(); await host.load(); host.api.setEnabled(true);
-        const picker=await w.picker(host);
-        picker.api.updateDraft('forest',null); w.drain();
+    test(`${mode}: manual picker insertion survives an Enable change and request replay`, async () => {
+        const w = world(mode), host = w.page();
+        await host.load();
+        host.api.setEnabled(true);
+        const picker = await w.picker(host);
+        picker.api.updateDraft('forest', null);
+        w.drain();
         picker.api.requestInsert('txt2img');
-        const request=w.sent.find(message=>message.type==='insert-request');
-        host.api.setEnabled(false); w.drain();
-        assert.equal(host.input('txt2img').value,'');
-        assert.equal(picker.api.state.enabled,false); assert.equal(picker.api.pendingInsertRequestId,'');
-        assert.match(picker.api.state.notice,/disabled/);
-        const count=w.sent.filter(message=>message.type==='insert-request').length;
+        const request = w.sent.find(message => message.type === 'insert-request');
+        host.api.setEnabled(false);
+        w.drain();
+        assert.equal(host.input('txt2img').value, 'forest');
+        assert.equal(picker.api.state.enabled, false);
+        assert.equal(picker.api.pendingInsertRequestId, '');
+        host.api.handleBroadcast(request);
+        w.drain();
+        assert.equal(host.input('txt2img').value, 'forest');
         picker.api.requestInsert('img2img');
-        assert.equal(w.sent.filter(message=>message.type==='insert-request').length,count);
-        host.api.setEnabled(true); w.drain();
-        host.api.handleBroadcast(request); w.drain();
-        assert.equal(host.input('txt2img').value,'');
-        picker.api.requestInsert('img2img');w.drain();assert.equal(host.input('img2img').value,'forest');
+        w.drain();
+        assert.equal(host.input('img2img').value, 'forest');
     });
 
     test(`${mode}: disabled original host initializes a new picker and other sessions stay independent`, async () => {
@@ -98,10 +101,13 @@ for (const [entryPoint, target, index] of [
             browser[entryPoint] = (...args) => args;
         }
         await host.load();
-        host.api.setEnabled(true);
-
         const input = host.input(target);
-        input.value = 'subject, manually inserted background';
+        input.value = 'subject, ';
+        input.setSelectionRange(input.value.length, input.value.length);
+        host.api.updateDraft('manually inserted background', null);
+        host.api.requestInsert(target);
+        assert.equal(input.value, 'subject, manually inserted background');
+        host.api.setEnabled(true);
         host.api.updateDraft('forest, pine trees', null);
         const generate = () => {
             const args = Array(index).fill(null);

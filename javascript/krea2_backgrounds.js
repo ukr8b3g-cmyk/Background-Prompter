@@ -1005,10 +1005,6 @@
 
     function syncEnableControls() {
         queryAll('[data-k2bg-action="enabled"]').forEach(input => { input.checked = state.enabled; });
-        queryAll('[data-k2bg-action="insert"]').forEach(button => {
-            button.disabled = !state.enabled;
-            button.title = state.enabled ? "" : t("disabled");
-        });
     }
 
     function setEnabled(value) {
@@ -1553,7 +1549,6 @@
     }
 
     function insertIntoPrompt(target, text, { profile = resolvedProfile(), selectedName = state.selectedName } = {}) {
-        if (state.enabled !== true) return false;
         if (!["txt2img", "img2img"].includes(target) || typeof text !== "string") return false;
         const textarea = appRoot().getElementById(`${target}_prompt`)?.querySelector("textarea");
         if (!textarea || !text.trim()) return false;
@@ -1573,10 +1568,6 @@
     }
 
     function requestInsert(target) {
-        if (state.enabled !== true) {
-            setNotice(t("disabled"));
-            return;
-        }
         if (!state.draft.trim()) {
             setNotice(t("emptyPrompt"));
             return;
@@ -1783,7 +1774,7 @@
             const key = `${message.source}:${message.requestId}`;
             let result = insertResults.get(key);
             if (!insertResults.has(key)) {
-                result = { ok: insertIntoPrompt(message.target, message.text, { profile: message.profile, selectedName: message.selectedName }), reason: state.enabled ? "" : "disabled" };
+                result = { ok: insertIntoPrompt(message.target, message.text, { profile: message.profile, selectedName: message.selectedName }) };
                 insertResults.set(key, result);
                 if (insertResults.size > 100) insertResults.delete(insertResults.keys().next().value);
             }
