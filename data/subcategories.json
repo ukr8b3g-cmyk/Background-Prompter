@@ -803,7 +803,10 @@
       "flying_boat_lake_hatch",
       "tracked_snow_coach_interior",
       "rickshaw_passenger_canopy_view",
-      "roller_coaster_passenger_row"
+      "roller_coaster_passenger_row",
+      "japanese_cargo_van_side_door",
+      "japanese_cargo_van_rear_bay",
+      "japanese_cargo_van_front_cabin"
     ]
   },
   "Deep sea exploration": {

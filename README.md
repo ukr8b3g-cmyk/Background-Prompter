@@ -5,13 +5,13 @@
 <img width="1794" height="1567" alt="Clip_5" src="https://github.com/user-attachments/assets/c938bd29-9520-431f-8d1c-65bfc0061591" />
 
 
-An image-backed background prompt picker for Forge Neo and ReForge. **It includes 1,013 background presets with preview images.** Browse visually, generate a model-aware prompt, edit it, and insert it into txt2img or img2img.
+An image-backed background prompt picker for Forge Neo and ReForge. **It includes 1,016 background presets with preview images.** Browse visually, generate a model-aware prompt, edit it, and insert it into txt2img or img2img.
 
 **v1.2.0** adds 421 backgrounds, searchable tags, subcategories, sorting, hover previews and a catalog reload button. See the [release notes](RELEASE_NOTES.md). After updating, reload the original WebUI and reopen its picker tabs using the same browser profile and WebUI address to retain browser data.
 
 ## Features
 
-- Browse 1,013 backgrounds by image, search, category, favorites, or recent use
+- Browse 1,016 backgrounds by image, search, category, favorites, or recent use
 - Jump directly to any page with the page slider or page number
 - Full tab, compact prompt bars, and a resizable side panel
 - Adjustable thumbnail size
@@ -90,13 +90,13 @@ Restart Forge Neo or ReForge after installation. For manual installation, place 
 <img width="1794" height="1567" alt="Background Prompterの画面" src="https://github.com/user-attachments/assets/6bc0656e-0ede-4fdc-9b6b-3f36ca233c00" />
 
 
-Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**画像付き背景プリセットを1,013件収録**しています。背景を画像で選び、モデルに合わせたプロンプトを編集してtxt2img / img2imgへ挿入できます。
+Forge Neo / ReForge向けの背景プロンプト選択Extensionです。**画像付き背景プリセットを1,016件収録**しています。背景を画像で選び、モデルに合わせたプロンプトを編集してtxt2img / img2imgへ挿入できます。
 
 **v1.2.0** では、背景421件と、検索タグ、サブカテゴリー、並べ替え、原寸プレビュー、プリセット再読み込みを追加しました。[更新内容](RELEASE_NOTES.md)。ブラウザー内のデータを引き継ぐには、更新後も同じプロファイルとWebUIアドレスを使い、元のWebUIを再読み込みしてピッカーを開き直してください。
 
 ### 主な機能
 
-- 1,013件を画像、検索、カテゴリ、お気に入り、最近使用から選択
+- 1,016件を画像、検索、カテゴリ、お気に入り、最近使用から選択
 - 上下のページスライダーまたはページ番号入力で任意ページへ直接移動
 - 通常タブ、コンパクトバー、幅を変えられるサイドパネルに対応
 - サムネイルサイズを調整可能
